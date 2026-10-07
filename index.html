@@ -77,8 +77,11 @@ nav.hide{display:none}
 .flash{animation:flash .35s}
 @keyframes flash{50%{background:var(--ok)}}
 /* progress */
-.ladder{background:var(--card);border-radius:18px;padding:14px;margin-bottom:12px}
-.lrow{display:flex;align-items:center;gap:8px;margin:6px 0}
+.ladder{background:var(--card);border-radius:18px;padding:6px}
+.lrow{display:flex;align-items:center;gap:8px;width:100%;min-height:52px;padding:0 10px;border-radius:12px;border:2px solid transparent;text-align:left}
+.lrow.sel{border-color:var(--accent);background:var(--bg)}
+.lrow:not(.sel) .segs i.on,.lrow:not(.sel) .segs i.cur{opacity:.45}
+.lrow.sel .lname{color:var(--accent)}
 .lrow .lname{width:96px;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lrow .segs{flex:1;display:grid;grid-template-columns:repeat(10,1fr);gap:3px}
 .lrow .segs i{height:14px;border-radius:3px;background:var(--line)}
@@ -88,9 +91,6 @@ nav.hide{display:none}
 .chart{background:var(--card);border-radius:18px;padding:12px;margin-bottom:12px}
 .chart svg{width:100%;height:auto;display:block}
 .empty{color:var(--mute);text-align:center;padding:30px 0}
-.grid6{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.grid6 button{height:52px;border-radius:14px;background:var(--card);font-weight:600;font-size:14px}
-.grid6 button.on{background:var(--accent);color:#fff}
 /* program */
 .opt-card{display:block;width:100%;text-align:left;background:var(--card);border-radius:16px;padding:14px 16px;margin-bottom:8px;border:2px solid transparent}
 .opt-card.on{border-color:var(--accent)}
@@ -150,10 +150,9 @@ nav.hide{display:none}
     <div class="top">
       <h1 id="pgTitle"></h1>
       <p class="sub" id="pgSub"></p>
-      <div class="ladder" id="ladder"></div>
       <div class="chart" id="pgChart"></div>
     </div>
-    <div class="bottom"><div class="grid6" id="pgPick"></div></div>
+    <div class="bottom"><div class="ladder" id="ladder"></div></div>
   </section>
 
   <section class="screen" id="s-program">
@@ -294,7 +293,7 @@ const T = {
   endQ:"Befejezed az edzést?", saveEnd:"Mentés és befejezés", discard:"Elvetés", keep:"Folytatom",
   levelUp:(n)=>`Haladó szint teljesítve! Jöhet a ${n}. lépés?`, goUp:"Igen, továbblépek", stay:"Még maradok",
   stepBack:"Nem lett meg a kezdő szint. A könyv szerint lépj vissza egyet, és tökéletesítsd a technikát.", goBack:"Visszalépek", master:"Mesterlépés teljesítve! 🏆",
-  noData:"Még nincs adat ezen a lépésen.", progressSub:"Hol tartasz a tíz lépésen", chartFor:(m,n)=>`${m} – ${n}. lépés, legjobb sorozat`,
+  noData:"Még nincs adat ezen a lépésen.", progressSub:"Koppints egy gyakorlatra a grafikonhoz", chartFor:(m,n)=>`${m} – ${n}. lépés, legjobb sorozat`,
   program:"Program", yourSteps:"Jelenlegi lépések", language:"Nyelv", data:"Adatok", export:"Exportálás", import:"Importálás", reset:"Minden törlése", resetQ:"Biztosan törlöd az összes adatot?",
   body:"Test", save:"Mentés", latest:"Utolsó", min:"Min", max:"Max", pickMv:"Melyik gyakorlat?",
   setsPerMv:"Edző sorozatok", days:["V","H","K","Sze","Cs","P","Szo"], dayNames:["vasárnap","hétfő","kedd","szerda","csütörtök","péntek","szombat"],
@@ -320,7 +319,7 @@ const T = {
   endQ:"End workout?", saveEnd:"Save & finish", discard:"Discard", keep:"Keep going",
   levelUp:(n)=>`Progression standard hit! Move to step ${n}?`, goUp:"Yes, step up", stay:"Not yet",
   stepBack:"You missed the beginner standard. The book says step back one and perfect your form.", goBack:"Step back", master:"Master step complete! 🏆",
-  noData:"No data at this step yet.", progressSub:"Where you are on the ten steps", chartFor:(m,n)=>`${m} – step ${n}, best set`,
+  noData:"No data at this step yet.", progressSub:"Tap a movement below to chart it", chartFor:(m,n)=>`${m} – step ${n}, best set`,
   program:"Program", yourSteps:"Current steps", language:"Language", data:"Data", export:"Export", import:"Import", reset:"Erase everything", resetQ:"Erase all data?",
   body:"Body", save:"Save", latest:"Latest", min:"Min", max:"Max", pickMv:"Which movement?",
   setsPerMv:"Work sets", days:["Su","Mo","Tu","We","Th","Fr","Sa"], dayNames:["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
@@ -565,13 +564,12 @@ function renderProgress(){
   $("#pgSub").textContent = t().progressSub;
   $("#ladder").innerHTML = MV.map(m => {
     const n = db.steps[m];
-    return `<div class="lrow"><span class="lname">${esc(mvName(m))}</span><span class="segs">${Array.from({length:10},(_,i)=>`<i class="${i<n-1?"on":i===n-1?"cur":""}"></i>`).join("")}</span><span class="lnum">${n}/10</span></div>`;
+    return `<button class="lrow ${m===pgMv?"sel":""}" data-m="${m}" aria-pressed="${m===pgMv}"><span class="lname">${esc(mvName(m))}</span><span class="segs">${Array.from({length:10},(_,i)=>`<i class="${i<n-1?"on":i===n-1?"cur":""}"></i>`).join("")}</span><span class="lnum">${n}/10</span></button>`;
   }).join("");
+  document.querySelectorAll("#ladder .lrow").forEach(b => b.onclick = () => { if (pgMv === b.dataset.m) return; pgMv = b.dataset.m; buzz(8); renderProgress(); });
   const n = db.steps[pgMv], st = step(pgMv,n);
   const pts = history(pgMv,n).map(h => ({x:h.date, y:Math.max(...h.work)}));
   $("#pgChart").innerHTML = `<div class="hint" style="margin:0 0 6px">${esc(t().chartFor(mvName(pgMv),n))}</div>` + chart(pts, st);
-  $("#pgPick").innerHTML = MV.map(m => `<button data-m="${m}" class="${m===pgMv?"on":""}">${esc(mvName(m))}</button>`).join("");
-  document.querySelectorAll("#pgPick button").forEach(b => b.onclick = () => { pgMv = b.dataset.m; buzz(8); renderProgress(); });
 }
 function chart(pts, st){
   if (!pts.length) return `<div class="empty">${t().noData}</div>`;
