@@ -80,7 +80,17 @@ nav.hide{display:none}
 .chart svg{width:100%;height:auto;display:block}
 .empty{color:var(--mute);text-align:center;padding:30px 0}
 /* program */
-.opt-card{display:block;width:100%;text-align:left;background:var(--card);border-radius:16px;padding:14px 16px;margin-bottom:8px;border:2px solid transparent}
+.opt-card{position:relative;display:block;width:100%;text-align:left;background:var(--card);border-radius:16px;padding:14px 56px 14px 16px;margin-bottom:8px;border:2px solid transparent;cursor:pointer}
+.opt-card .info{position:absolute;top:6px;right:6px;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:var(--mute)}
+.opt-card .info svg{width:22px;height:22px}
+.opt-card .info[aria-expanded="true"]{color:var(--accent)}
+.pdet{margin:12px -40px 0 0;padding-top:12px;border-top:1px solid var(--line);font-size:14px}
+.pdet table{border-collapse:collapse;width:100%;margin-bottom:10px}
+.pdet td{padding:3px 0;vertical-align:top}
+.pdet td:first-child{width:96px;color:var(--mute)}
+.pdet td.off{color:var(--mute)}
+.pdet ul{margin:0;padding-left:18px;color:var(--mute)}
+.pdet li{margin:3px 0}
 .opt-card.on{border-color:var(--accent)}
 .opt-card b{display:block;font-size:17px}
 .opt-card small{color:var(--mute)}
@@ -291,6 +301,12 @@ const T = {
   mv:{push:"Fekvőtámasz",squat:"Guggolás",pull:"Húzódzkodás",leg:"Lábemelés",bridge:"Híd",hspu:"Kézenállás"},
   mvLong:{hspu:"Fekvőtámasz kézenállásban"},
   prog:{fresh:"Friss hús",good:"Jó magaviselet",veteran:"Veterán",solitary:"Magánzárka",supermax:"Supermax"},
+  progNotes:{
+    fresh:["Rengeteg idő a regenerációra – kezdőként az izomláz tényleg legyengít.","Híd és kézenállásos fekvőtámasz csak akkor, ha az alapok már mennek: erősebb izommunkát és ép ízületeket kívánnak.","Az izmok gyorsabban alkalmazkodnak, mint az ízületek – ez a program időt ad nekik.","Ha mind a négy gyakorlatnál túl vagy a 6. lépésen, válts a következő programra."],
+    good:["Szinte bárki sűrű napirendjébe belefér.","Bármilyen szinten jó tartós erősítésre; időnként érdemes ide visszatérni.","Aki gyorsan regenerálódik, annak talán túl óvatos – de jó azoknak, akik mellette futnak, bokszolnak stb."],
+    veteran:["Néhány hónap edzés után ajánlott.","Egy edzés akár 6–7 perc alatt megvan.","Felsőtest és alsótest sosem jön két egymást követő napon, így könnyű a regeneráció.","Iktass be pihenőnapot, amikor kell – a heti egy szünnap viszont kötelező."],
+    solitary:["Háromnapos ciklus, hetente kétszer.","Csak kiváló regenerációval és legalább egy év kemény edzés után.","Kiegészítő munka: fogás (H, Cs), vádli (K, P), nyak (Sze, Szo) – ezeket az app nem követi.","Ne csináld egész évben folyamatosan."],
+    supermax:["Volumenedzés állóképességre – erőt nem ad.","Kezdj gyakorlatonként 10 × 10 ismétléssel, a cél napi 50 sorozat gyakorlatonként.","A sorozatokat elosztathatod a napon belül miniedzésekre.","Csak ha a tíz lépésen már túl vagy, és évek óta keményen edzel."]},
   progDesc:{fresh:"Heti 2 nap, 4 gyakorlat. Kezdőknek – amíg mind a négynél el nem hagyod a 6. lépést.",
     good:"Heti 3 nap, mind a hat gyakorlat. A legjobb alapprogram szinte mindenkinek.",
     veteran:"Heti 6 nap, napi egy gyakorlat. Pár hónap edzés után.",
@@ -317,6 +333,12 @@ const T = {
   mv:{push:"Push-up",squat:"Squat",pull:"Pull-up",leg:"Leg raise",bridge:"Bridge",hspu:"Handstand"},
   mvLong:{hspu:"Handstand push-up"},
   prog:{fresh:"New Blood",good:"Good Behavior",veteran:"Veterano",solitary:"Solitary Confinement",supermax:"Supermax"},
+  progNotes:{
+    fresh:["Plenty of recovery time – as a beginner, soreness really drains you.","Bridges and handstand push-ups wait until the basics are solid: they need stronger contractions and healthy joints.","Muscles adapt faster than joints – this program gives them time.","Once you're past step 6 on all four movements, move to the next program."],
+    good:["Fits almost anyone's busy schedule.","Good for lasting strength at any level; worth returning to now and then.","If you recover fast it may feel cautious – but it suits athletes who also run, box, etc."],
+    veteran:["Recommended after a few months of training.","A session can take just 6–7 minutes.","Upper and lower body never land on back-to-back days, so recovery is easy.","Add rest days whenever you need them – but keep one full rest day a week."],
+    solitary:["A three-day cycle, run twice a week.","Only with excellent recovery and at least a year of hard training.","Extra work: grip (Mon, Thu), calves (Tue, Fri), neck (Wed, Sat) – the app doesn't track these.","Don't run it continuously all year."],
+    supermax:["Volume training for endurance – it won't build strength.","Start with 10 sets of 10 per movement and build towards 50 sets per movement a day.","Spread the sets through the day as mini-sessions.","Only once you're past the ten steps and have trained hard for years."]},
   progDesc:{fresh:"2 days a week, 4 movements. For beginners, until you pass step 6 on all four.",
     good:"3 days a week, all six movements. The best base program for almost anyone.",
     veteran:"6 days a week, one movement a day. After a few months of training.",
@@ -596,11 +618,21 @@ function chart(pts, st){
 }
 
 /* ============ Program ============ */
+const progOpen = new Set(); // program cards with details expanded
 function renderProgram(){
   const P = PROGRAMS[db.program];
   let h = `<div class="stats" id="bwStats"></div><div class="chart" id="bwChart"></div>`;
   h += `<div class="section" style="margin-top:4px">${t().program} · ${t().setsPerMv}: ${P.sets}</div>`;
-  h += Object.keys(PROGRAMS).map(k => `<button class="opt-card ${k===db.program?"on":""}" data-p="${k}"><b>${t().prog[k]}</b><small>${t().progDesc[k]}</small></button>`).join("");
+  h += Object.keys(PROGRAMS).map(k => {
+    const open = progOpen.has(k), days = PROGRAMS[k].days;
+    const det = open ? `<div class="pdet"><table>${[1,2,3,4,5,6,0].map(d => days[d]
+        ? `<tr><td>${t().dayNames[d]}</td><td>${days[d].map(m => esc(mvName(m,true))).join(", ")}</td></tr>`
+        : `<tr><td>${t().dayNames[d]}</td><td class="off">${t().rest}</td></tr>`).join("")}</table>
+      <ul><li>${t().setsPerMv}: ${PROGRAMS[k].sets}</li>${t().progNotes[k].map(n => `<li>${esc(n)}</li>`).join("")}</ul></div>` : "";
+    return `<div class="opt-card ${k===db.program?"on":""}" data-p="${k}" role="button" tabindex="0" aria-pressed="${k===db.program}">
+      <b>${t().prog[k]}</b><small>${t().progDesc[k]}</small>
+      <button class="info" data-info="${k}" aria-label="Info" aria-expanded="${open}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v6"/><circle cx="12" cy="7.5" r="1.2" fill="currentColor" stroke="none"/></svg></button>${det}</div>`;
+  }).join("");
   if (db.program === "solitary") h += `<p class="hint">${t().extras}</p>`;
   h += `<div class="section">${t().yourSteps}</div>`;
   h += MV.map(m => `<div class="srow"><div class="sinfo"><b>${esc(mvName(m,true))}</b><small>${esc(sName(m,db.steps[m]))}</small></div>
@@ -616,7 +648,10 @@ function renderProgram(){
   $("#wLabel").textContent = t().bodyWeight;
   const lastW = db.body[db.body.length-1];
   $("#bwIn").placeholder = lastW ? fmtKg(lastW.kg) : `00${DEC}0`;
-  document.querySelectorAll("[data-p]").forEach(b => b.onclick = () => { db.program = b.dataset.p; save(); buzz(10); renderProgram(); });
+  document.querySelectorAll("[data-p]").forEach(b => b.onclick = () => { if (db.program === b.dataset.p) return; db.program = b.dataset.p; save(); buzz(10); renderProgram(); });
+  document.querySelectorAll("[data-info]").forEach(b => b.onclick = e => {
+    e.stopPropagation(); const k = b.dataset.info; progOpen.has(k) ? progOpen.delete(k) : progOpen.add(k); buzz(8); renderProgram();
+  });
   document.querySelectorAll("[data-st]").forEach(b => b.onclick = () => {
     const m = b.dataset.st; db.steps[m] = Math.min(10, Math.max(1, db.steps[m] + Number(b.dataset.d))); save(); buzz(8); renderProgram();
   });
