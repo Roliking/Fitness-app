@@ -1,15 +1,16 @@
 <!doctype html>
-<html lang="en">
+<html lang="hu">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#14161a">
-<title>Lift</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Fegyencedzés</title>
 <style>
 :root{
   --bg:#f4f5f7; --card:#fff; --ink:#14161a; --mute:#6b7280; --line:#e3e5ea;
-  --accent:#ff5a1f; --accent-ink:#fff; --panel:#14161a; --panel-ink:#fff; --panel-2:#23262d;
-  --tab-h:64px;
+  --accent:#ff5a1f; --ok:#16a34a; --panel:#14161a; --panel-ink:#fff; --panel-2:#23262d;
+  --t1:#f59e0b; --t2:#3b82f6; --t3:#16a34a;
 }
 @media (prefers-color-scheme: dark){
   :root{ --bg:#0d0e10; --card:#1a1c20; --ink:#f2f3f5; --mute:#9aa0aa; --line:#2a2d34; --panel:#1f2228; --panel-2:#2c3037; }
@@ -23,357 +24,631 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;touch-
 .top{flex:1;min-height:0;overflow:auto;padding:20px 16px 16px}
 .bottom{flex:none;padding:12px 16px 16px}
 h1{font-size:28px;margin:0 0 2px}
+h3{margin:4px 0 10px}
 .sub{color:var(--mute);margin:0 0 16px}
 .week{display:flex;gap:6px;margin-bottom:20px}
-.day{flex:1;text-align:center;padding:8px 0;border-radius:12px;background:var(--card);font-size:12px;color:var(--mute)}
+.day{flex:1;text-align:center;padding:8px 0;border-radius:12px;background:var(--card);font-size:12px;color:var(--mute);border:2px solid transparent}
 .day b{display:block;font-size:17px;color:var(--ink)}
-.day.today{background:var(--accent);color:var(--accent-ink)} .day.today b{color:var(--accent-ink)}
+.day.train{border-color:var(--line)}
+.day.today{background:var(--accent);color:#fff} .day.today b{color:#fff}
 .day.done::after{content:"";display:block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin:4px auto 0}
 .day.today.done::after{background:#fff}
 .card{display:flex;align-items:center;background:var(--card);border-radius:18px;padding:16px;margin-bottom:12px;gap:12px}
 .card .info{flex:1;min-width:0}
 .card .name{font-weight:700;font-size:18px}
-.card .meta{color:var(--mute);font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.play{width:64px;height:64px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-size:26px;flex:none}
-.big{min-height:64px;border-radius:18px;padding:0 24px;font-weight:700;font-size:18px;background:var(--accent);color:var(--accent-ink)}
+.card .meta{color:var(--mute);font-size:14px}
+.rest{background:var(--card);border-radius:18px;padding:20px;margin-bottom:12px}
+.rest b{font-size:20px;display:block;margin-bottom:4px}
+.play{width:64px;height:64px;border-radius:50%;background:var(--accent);color:#fff;font-size:24px;flex:none}
+.big{min-height:64px;border-radius:18px;padding:0 24px;font-weight:700;font-size:18px;background:var(--accent);color:#fff}
 .ghost{background:var(--card);color:var(--ink)}
-.row-end{display:flex;justify-content:flex-end}
-.row-split{display:flex;justify-content:space-between;align-items:center;gap:12px}
-/* tabs */
-nav{flex:none;display:flex;height:calc(var(--tab-h) + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:var(--card);border-top:1px solid var(--line)}
+.row-end{display:flex;justify-content:flex-end;gap:10px}
+.tiers{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.tier{font-size:12px;font-weight:700;padding:3px 8px;border-radius:999px;background:var(--line);color:var(--mute)}
+.tier.met{color:#fff} .tier.met.k{background:var(--t1)} .tier.met.m{background:var(--t2)} .tier.met.h{background:var(--t3)}
+nav{flex:none;display:flex;height:calc(64px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:var(--card);border-top:1px solid var(--line)}
 nav button{flex:1;font-size:13px;color:var(--mute);font-weight:600}
 nav button.on{color:var(--accent)}
 nav.hide{display:none}
-/* active workout */
-.exname{font-size:30px;font-weight:800;margin:0}
-.dots{display:flex;gap:6px;margin:10px 0 18px}
-.dots i{width:22px;height:5px;border-radius:3px;background:var(--line)} .dots i.on{background:var(--accent)}
-.sets{list-style:none;margin:0;padding:0}
-.sets li{display:flex;justify-content:space-between;padding:12px 14px;background:var(--card);border-radius:12px;margin-bottom:8px;font-size:18px}
-.sets li span{color:var(--mute)}
-.hint{color:var(--mute);font-size:14px;margin-top:12px}
+/* active */
+.mvname{font-size:14px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.06em}
+.exname{font-size:26px;font-weight:800;margin:2px 0 4px}
+.goal{color:var(--mute);font-size:14px;margin-bottom:12px}
+.queue{list-style:none;margin:0 0 10px;padding:0}
+.queue li{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:var(--card);border-radius:12px;margin-bottom:8px;font-size:17px;border:2px solid transparent}
+.queue li.cur{border-color:var(--accent)}
+.queue li.done{opacity:.6}
+.queue li span{color:var(--mute);font-size:15px}
+.queue li.done span{color:var(--ink)}
+.hint{color:var(--mute);font-size:14px;margin:6px 0}
+.timer{font-variant-numeric:tabular-nums;font-weight:700}
 .panel{background:var(--panel);color:var(--panel-ink);border-radius:28px 28px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
-.steppers{display:grid;gap:10px;margin-bottom:14px}
-.stepper{display:flex;align-items:center;gap:8px;background:var(--panel-2);border-radius:18px;padding:6px}
-.stepper label{width:58px;padding-left:10px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#9aa0aa}
-.stepper output{flex:1;text-align:center;font-size:32px;font-weight:800;font-variant-numeric:tabular-nums}
-.stepper button{width:64px;height:56px;border-radius:14px;background:#3a3f48;font-size:28px;font-weight:700;color:#fff}
+.stepper{display:flex;align-items:center;gap:8px;background:var(--panel-2);border-radius:18px;padding:6px;margin-bottom:14px}
+.stepper label{width:72px;padding-left:10px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#9aa0aa}
+.stepper output{flex:1;text-align:center;font-size:38px;font-weight:800;font-variant-numeric:tabular-nums}
+.stepper button{width:72px;height:64px;border-radius:14px;background:#3a3f48;font-size:30px;font-weight:700;color:#fff}
 .stepper button.plus{background:#4a505c}
-.actions{display:flex;justify-content:space-between;align-items:center}
-.end{height:56px;padding:0 18px;border-radius:14px;background:var(--panel-2);color:#ff8a8a;font-weight:700}
-.log{height:72px;min-width:200px;border-radius:22px;background:var(--accent);color:#fff;font-size:21px;font-weight:800}
+.actions{display:flex;align-items:center;gap:10px}
+.end{height:56px;padding:0 16px;border-radius:14px;background:var(--panel-2);color:#ff8a8a;font-weight:700}
+.minor{height:56px;padding:0 14px;border-radius:14px;background:var(--panel-2);color:#fff;font-weight:600}
+.log{flex:1;height:72px;border-radius:22px;background:var(--accent);color:#fff;font-size:19px;font-weight:800;padding:0 12px}
+.log.warm{background:#4a505c}
 .log:active,.play:active,.big:active{transform:scale(.97)}
 .flash{animation:flash .35s}
-@keyframes flash{50%{background:#22c55e}}
-/* progress/body */
+@keyframes flash{50%{background:var(--ok)}}
+/* progress */
+.ladder{background:var(--card);border-radius:18px;padding:14px;margin-bottom:12px}
+.lrow{display:flex;align-items:center;gap:8px;margin:6px 0}
+.lrow .lname{width:96px;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lrow .segs{flex:1;display:grid;grid-template-columns:repeat(10,1fr);gap:3px}
+.lrow .segs i{height:14px;border-radius:3px;background:var(--line)}
+.lrow .segs i.on{background:var(--accent)}
+.lrow .segs i.cur{background:var(--accent);opacity:.5}
+.lrow .lnum{width:34px;text-align:right;font-size:13px;color:var(--mute)}
+.chart{background:var(--card);border-radius:18px;padding:12px;margin-bottom:12px}
+.chart svg{width:100%;height:auto;display:block}
+.empty{color:var(--mute);text-align:center;padding:30px 0}
+.grid6{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.grid6 button{height:52px;border-radius:14px;background:var(--card);font-weight:600;font-size:14px}
+.grid6 button.on{background:var(--accent);color:#fff}
+/* program */
+.opt-card{display:block;width:100%;text-align:left;background:var(--card);border-radius:16px;padding:14px 16px;margin-bottom:8px;border:2px solid transparent}
+.opt-card.on{border-color:var(--accent)}
+.opt-card b{display:block;font-size:17px}
+.opt-card small{color:var(--mute)}
+.srow{display:flex;align-items:center;gap:8px;background:var(--card);border-radius:14px;padding:8px 8px 8px 14px;margin-bottom:8px}
+.srow .sinfo{flex:1;min-width:0}
+.srow .sinfo small{display:block;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.srow button{width:48px;height:48px;border-radius:12px;background:var(--line);font-size:22px;font-weight:700}
+.srow .snum{width:28px;text-align:center;font-weight:800;font-size:18px}
+.section{font-size:13px;font-weight:700;color:var(--mute);text-transform:uppercase;letter-spacing:.06em;margin:20px 0 8px}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap}
+.small{height:48px;padding:0 16px;border-radius:12px;background:var(--card);font-weight:600}
+/* body */
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
 .stat{background:var(--card);border-radius:14px;padding:12px}
 .stat small{display:block;color:var(--mute);font-size:12px}
 .stat b{font-size:20px}
-.chart{background:var(--card);border-radius:18px;padding:12px;margin-bottom:12px}
-.chart svg{width:100%;height:auto;display:block}
-.empty{color:var(--mute);text-align:center;padding:40px 0}
-select{width:100%;height:56px;border-radius:16px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-size:17px;padding:0 14px;margin-bottom:10px}
-.seg{display:flex;background:var(--card);border-radius:16px;padding:4px;gap:4px}
-.seg button{flex:1;height:48px;border-radius:12px;font-weight:600;color:var(--mute)}
-.seg button.on{background:var(--accent);color:#fff}
 .bw{display:flex;gap:10px;align-items:center}
-.bw .stepper{flex:1;background:var(--card)} .bw .stepper button{background:var(--line);color:var(--ink)} .bw .stepper label{color:var(--mute)}
-.bw .big{min-width:110px}
+.bw .stepper{flex:1;background:var(--card);margin:0;color:var(--ink)} .bw .stepper button{background:var(--line);color:var(--ink);width:56px;height:56px}
+.bw .stepper output{font-size:26px}
 .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.small{height:44px;padding:0 16px;border-radius:12px;background:var(--card);font-weight:600}
 /* sheet */
 .sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-end;z-index:9}
 .sheet-bg.on{display:flex}
-.sheet{width:100%;max-width:560px;margin:0 auto;background:var(--card);border-radius:28px 28px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom));max-height:70vh;overflow:auto}
-.sheet button.opt{display:block;width:100%;text-align:left;height:56px;padding:0 14px;border-radius:14px;font-size:17px}
+.sheet{width:100%;max-width:560px;margin:0 auto;background:var(--card);border-radius:28px 28px 0 0;padding:20px 16px calc(16px + env(safe-area-inset-bottom));max-height:80vh;overflow:auto}
+.sheet button.opt{display:block;width:100%;text-align:left;min-height:56px;padding:0 14px;border-radius:14px;font-size:17px}
 .sheet button.opt:active{background:var(--line)}
-.sheet input{width:100%;height:56px;border-radius:14px;border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:0 14px;font:inherit;font-size:17px;margin:8px 0}
+.sheet button.opt.primary{background:var(--accent);color:#fff;font-weight:700;margin-bottom:6px}
 </style>
 </head>
 <body>
 <div id="app">
-  <!-- TODAY -->
   <section class="screen on" id="s-today">
     <div class="top">
       <h1 id="todayTitle"></h1>
       <p class="sub" id="todaySub"></p>
       <div class="week" id="week"></div>
-      <div id="routines"></div>
+      <div id="todayList"></div>
     </div>
-    <div class="bottom row-end"><button class="big" id="emptyBtn">Empty workout</button></div>
+    <div class="bottom row-end" id="todayBtns"></div>
   </section>
 
-  <!-- ACTIVE WORKOUT -->
   <section class="screen" id="s-active">
     <div class="top" id="activeTop"></div>
     <div class="panel">
-      <div class="steppers">
-        <div class="stepper"><label>kg</label><button data-s="w-" aria-label="Less weight">−</button><output id="wOut"></output><button class="plus" data-s="w+" aria-label="More weight">+</button></div>
-        <div class="stepper"><label>reps</label><button data-s="r-" aria-label="Fewer reps">−</button><output id="rOut"></output><button class="plus" data-s="r+" aria-label="More reps">+</button></div>
-      </div>
+      <div class="stepper"><label id="unitLbl"></label><button data-s="-" aria-label="−">−</button><output id="valOut"></output><button class="plus" data-s="+" aria-label="+">+</button></div>
       <div class="actions">
-        <button class="end" id="endBtn">End</button>
+        <button class="end" id="endBtn"></button>
+        <button class="minor" id="minorBtn"></button>
         <button class="log" id="logBtn"></button>
       </div>
     </div>
   </section>
 
-  <!-- PROGRESS -->
   <section class="screen" id="s-progress">
     <div class="top">
-      <h1 id="pgTitle">Progress</h1>
+      <h1 id="pgTitle"></h1>
       <p class="sub" id="pgSub"></p>
-      <div class="stats" id="pgStats"></div>
+      <div class="ladder" id="ladder"></div>
       <div class="chart" id="pgChart"></div>
     </div>
-    <div class="bottom">
-      <select id="pgEx" aria-label="Exercise"></select>
-      <div class="seg" id="pgMetric">
-        <button data-m="top">Top weight</button><button data-m="1rm">1RM</button><button data-m="vol">Volume</button>
-      </div>
-    </div>
+    <div class="bottom"><div class="grid6" id="pgPick"></div></div>
   </section>
 
-  <!-- BODY -->
+  <section class="screen" id="s-program">
+    <div class="top" id="programTop"></div>
+  </section>
+
   <section class="screen" id="s-body">
     <div class="top">
-      <div class="topbar"><h1>Body</h1><button class="small" id="exportBtn">Export</button></div>
+      <div class="topbar"><h1 id="bodyTitle"></h1></div>
       <div class="stats" id="bwStats"></div>
       <div class="chart" id="bwChart"></div>
     </div>
     <div class="bottom">
       <div class="bw">
-        <div class="stepper"><button data-b="-" aria-label="Lighter">−</button><output id="bwOut"></output><button data-b="+" aria-label="Heavier">+</button></div>
-        <button class="big" id="bwSave">Save</button>
+        <div class="stepper"><button data-b="-" aria-label="−">−</button><output id="bwOut"></output><button data-b="+" aria-label="+">+</button></div>
+        <button class="big" id="bwSave"></button>
       </div>
     </div>
   </section>
 
   <nav id="nav">
-    <button data-t="today" class="on">Today</button>
-    <button data-t="progress">Progress</button>
-    <button data-t="body">Body</button>
+    <button data-t="today" class="on"></button>
+    <button data-t="progress"></button>
+    <button data-t="program"></button>
+    <button data-t="body"></button>
   </nav>
 </div>
 
 <div class="sheet-bg" id="sheetBg"><div class="sheet" id="sheet"></div></div>
+<input type="file" id="importFile" accept="application/json" hidden>
 
 <script>
 "use strict";
-const $ = s => document.querySelector(s);
-const KEY = "lift.v1";
-const DEFAULT = {
-  routines: [
-    {name:"Push", ex:["Bench Press","Overhead Press","Incline DB Press","Triceps Pushdown"]},
-    {name:"Pull", ex:["Deadlift","Pull-up","Barbell Row","Biceps Curl"]},
-    {name:"Legs", ex:["Squat","Romanian Deadlift","Leg Press","Calf Raise"]}
-  ],
-  sessions: [], body: []
+/* ============ Data: the six movements, ten steps each ============
+   Goals per step: [sets, reps] for Kezdő / Középhaladó / Haladó. s = seconds, e = each side. */
+const MV = ["push","squat","pull","leg","bridge","hspu"];
+const STEPS = {
+ push: [
+  ["Fekvőtámasz falnál","Wall push-up","1x10 2x25 3x50"],
+  ["Fekvőtámasz előredőlve","Incline push-up","1x10 2x20 3x40"],
+  ["Fekvőtámasz térdelve","Kneeling push-up","1x10 2x15 3x30"],
+  ["Fél fekvőtámasz","Half push-up","1x8 2x12 2x25"],
+  ["Teljes fekvőtámasz","Full push-up","1x5 2x10 2x20"],
+  ["Fekvőtámasz szűk kéztartással","Close push-up","1x5 2x10 2x20"],
+  ["Felemás fekvőtámasz","Uneven push-up","1x5 2x10 2x20","e"],
+  ["Fél egykezes fekvőtámasz","½ one-arm push-up","1x5 2x10 2x20","e"],
+  ["Emelőkaros fekvőtámasz","Lever push-up","1x5 2x10 2x20","e"],
+  ["Egykezes fekvőtámasz","One-arm push-up","1x5 2x10 1x100","e"]],
+ squat: [
+  ["Guggolás gyertyaállásban","Shoulderstand squat","1x10 2x25 3x50"],
+  ["Bicska guggolás","Jackknife squat","1x10 2x20 3x40"],
+  ["Guggolás támasszal","Supported squat","1x10 2x15 3x30"],
+  ["Fél guggolás","Half squat","1x8 2x35 2x50"],
+  ["Teljes guggolás","Full squat","1x5 2x10 2x30"],
+  ["Guggolás zárt lábbal","Close squat","1x5 2x10 2x20"],
+  ["Felemás guggolás labdával","Uneven squat","1x5 2x10 2x20","e"],
+  ["Fél egylábas guggolás","½ one-leg squat","1x5 2x10 2x20","e"],
+  ["Egylábas guggolás támasszal","Assisted one-leg squat","1x5 2x10 2x20","e"],
+  ["Egylábas guggolás","One-leg squat","1x5 2x10 2x50","e"]],
+ pull: [
+  ["Függőleges húzás","Vertical pull","1x10 2x20 3x40"],
+  ["Vízszintes húzás","Horizontal pull","1x10 2x20 3x30"],
+  ["Bicska húzódzkodás","Jackknife pull-up","1x10 2x15 3x20"],
+  ["Fél húzódzkodás","Half pull-up","1x8 2x11 2x15"],
+  ["Teljes húzódzkodás","Full pull-up","1x5 2x8 2x10"],
+  ["Szűk húzódzkodás","Close pull-up","1x5 2x8 2x10"],
+  ["Felemás húzódzkodás","Uneven pull-up","1x5 2x7 2x9","e"],
+  ["Fél egykezes húzódzkodás","½ one-arm pull-up","1x4 2x6 2x8","e"],
+  ["Egykezes húzódzkodás törülközővel","Assisted one-arm pull-up","1x3 2x5 2x7","e"],
+  ["Egykezes húzódzkodás","One-arm pull-up","1x1 2x3 2x6","e"]],
+ leg: [
+  ["Térdhúzás","Knee tuck","1x10 2x25 3x40"],
+  ["Térdemelés fekvésben","Flat knee raise","1x10 2x20 3x35"],
+  ["Hajlított lábemelés fekvésben","Flat bent-leg raise","1x10 2x15 3x30"],
+  ["Béka lábemelés fekvésben","Flat frog raise","1x8 2x15 3x25"],
+  ["Nyújtott lábemelés fekvésben","Flat straight-leg raise","1x5 2x10 2x20"],
+  ["Térdemelés függeszkedésben","Hanging knee raise","1x5 2x10 2x15"],
+  ["Hajlított lábemelés függeszkedésben","Hanging bent-leg raise","1x5 2x10 2x15"],
+  ["Béka lábemelés függeszkedésben","Hanging frog raise","1x5 2x10 2x15"],
+  ["Fél nyújtott lábemelés","Partial straight-leg raise","1x5 2x10 2x15"],
+  ["Nyújtott lábemelés függeszkedésben","Hanging straight-leg raise","1x5 2x10 2x30"]],
+ bridge: [
+  ["Rövid híd","Short bridge","1x10 2x25 3x50"],
+  ["Egyenes híd","Straight bridge","1x10 2x20 3x40"],
+  ["Híd szögben","Angled bridge","1x8 2x15 3x30"],
+  ["Híd fejtámasszal","Head bridge","1x8 2x15 2x25"],
+  ["Fél híd","Half bridge","1x8 2x15 2x20"],
+  ["Teljes híd","Full bridge","1x6 2x10 2x15"],
+  ["Híd a falon lefelé","Wall walking (down)","1x3 2x6 2x10"],
+  ["Híd a falon felfelé","Wall walking (up)","1x2 2x4 2x8"],
+  ["Híd állásból (lefelé)","Closing bridge","1x1 2x3 2x6"],
+  ["Híd állásból állásba","Stand-to-stand bridge","1x1 2x3 2x10"]],
+ hspu: [
+  ["Fejenállás fal mellett","Wall headstand","1x30 1x60 1x120","s"],
+  ["Varjútartás","Crow stand","1x10 1x30 1x60","s"],
+  ["Kézenállás fal mellett","Wall handstand","1x30 1x60 1x120","s"],
+  ["Fél fekvőtámasz kézenállásban","Half handstand push-up","1x5 2x10 2x20"],
+  ["Fekvőtámasz kézenállásban","Handstand push-up","1x5 2x10 2x15"],
+  ["Szűk fekvőtámasz kézenállásban","Close handstand push-up","1x5 2x9 2x12"],
+  ["Felemás fekvőtámasz kézenállásban","Uneven handstand push-up","1x5 2x8 2x10","e"],
+  ["Fél egykezes fekvőtámasz kézenállásban","½ one-arm handstand push-up","1x4 2x6 2x8","e"],
+  ["Emelőkaros fekvőtámasz kézenállásban","Lever handstand push-up","1x3 2x4 2x6","e"],
+  ["Egykezes fekvőtámasz kézenállásban","One-arm handstand push-up","1x1 2x2 1x5","e"]]
 };
-let db;
-try { db = JSON.parse(localStorage.getItem(KEY)) || structuredClone(DEFAULT); } catch { db = structuredClone(DEFAULT); }
-const save = () => { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch {} };
-const buzz = p => { try { navigator.vibrate && navigator.vibrate(p); } catch {} };
-const dayKey = d => { const x = new Date(d); return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0"); };
-const fmt = n => (Math.round(n*10)/10).toString();
-const e1rm = (w,r) => w * (1 + r/30);
+const step = (mv, n) => {
+  const [hu, en, g, f=""] = STEPS[mv][n-1];
+  return { hu, en, goals: g.split(" ").map(x => x.split("x").map(Number)), sec: f.includes("s"), side: f.includes("e") };
+};
 
-/* ---------- tabs ---------- */
+/* Programs from the book. Days: 0=Sun … 6=Sat. minSets = work sets the program asks for at minimum. */
+const PROGRAMS = {
+  fresh:    { days:{1:["push","leg"],5:["pull","squat"]}, sets:"2–3", minSets:1 },
+  good:     { days:{1:["push","leg"],3:["pull","squat"],5:["hspu","bridge"]}, sets:"2", minSets:1 },
+  veteran:  { days:{1:["pull"],2:["bridge"],3:["hspu"],4:["leg"],5:["squat"],6:["push"]}, sets:"2–3", minSets:1 },
+  solitary: { days:{1:["pull","squat"],2:["push","leg"],3:["hspu","bridge"],4:["pull","squat"],5:["push","leg"],6:["hspu","bridge"]}, sets:"3–5", minSets:3 },
+  supermax: { days:{1:["pull","squat"],2:["push","leg"],3:["hspu","bridge"],4:["pull","squat"],5:["push","leg"],6:["hspu","bridge"]}, sets:"10–50 × 10", minSets:10 }
+};
+
+/* ============ i18n ============ */
+const T = {
+ hu: {
+  tabs:["Ma","Fejlődés","Program","Test"],
+  mv:{push:"Fekvőtámasz",squat:"Guggolás",pull:"Húzódzkodás",leg:"Lábemelés",bridge:"Híd",hspu:"Kézenállás"},
+  mvLong:{hspu:"Fekvőtámasz kézenállásban"},
+  prog:{fresh:"Friss hús",good:"Jó magaviselet",veteran:"Veterán",solitary:"Magánzárka",supermax:"Supermax"},
+  progDesc:{fresh:"Heti 2 nap, 4 gyakorlat. Kezdőknek – amíg mind a négynél el nem hagyod a 6. lépést.",
+    good:"Heti 3 nap, mind a hat gyakorlat. A legjobb alapprogram szinte mindenkinek.",
+    veteran:"Heti 6 nap, napi egy gyakorlat. Pár hónap edzés után.",
+    solitary:"Heti 6 nap, napi két gyakorlat. Csak haladóknak, kiváló regenerációval.",
+    supermax:"Volumenedzés állóképességre. Csak ha a tíz lépésen már túl vagy."},
+  tiers:["Kezdő","Középhaladó","Haladó"], tierShort:["K","KH","H"],
+  step:"lépés", stepOf:(n)=>`${n}. lépés`, sets:"sorozat",
+  rest:"Pihenőnap", next:"Következő edzés", startToday:"Mai edzés", free:"Szabad edzés",
+  reps:"ismétlés", secs:"mp", eachSide:"oldalanként",
+  warm:"Bemelegítés", work:"Edző sorozat", doneWarm:"Bemelegítés kész", logSet:(n)=>`${n}. sorozat kész`,
+  skip:"Kihagy", addSet:"+ sorozat", end:"Vége", nextMv:(m)=>`Tovább: ${m}`, finish:"Edzés vége ✓",
+  tempo:"Tempó: 2 mp le · 1 mp szünet · 2 mp fel", last:"Legutóbb", goal:"Cél", restT:"Pihenő",
+  endQ:"Befejezed az edzést?", saveEnd:"Mentés és befejezés", discard:"Elvetés", keep:"Folytatom",
+  levelUp:(n)=>`Haladó szint teljesítve! Jöhet a ${n}. lépés?`, goUp:"Igen, továbblépek", stay:"Még maradok",
+  stepBack:"Nem lett meg a kezdő szint. A könyv szerint lépj vissza egyet, és tökéletesítsd a technikát.", goBack:"Visszalépek", master:"Mesterlépés teljesítve! 🏆",
+  noData:"Még nincs adat ezen a lépésen.", progressSub:"Hol tartasz a tíz lépésen", chartFor:(m,n)=>`${m} – ${n}. lépés, legjobb sorozat`,
+  program:"Program", yourSteps:"Jelenlegi lépések", language:"Nyelv", data:"Adatok", export:"Exportálás", import:"Importálás", reset:"Minden törlése", resetQ:"Biztosan törlöd az összes adatot?",
+  body:"Test", save:"Mentés", latest:"Utolsó", min:"Min", max:"Max", pickMv:"Melyik gyakorlat?",
+  setsPerMv:"Edző sorozatok", days:["V","H","K","Sze","Cs","P","Szo"], dayNames:["vasárnap","hétfő","kedd","szerda","csütörtök","péntek","szombat"],
+  extras:"A könyv itt fogás-, vádli- és nyakgyakorlatokat is ad – ezeket az app nem követi."
+ },
+ en: {
+  tabs:["Today","Progress","Program","Body"],
+  mv:{push:"Push-up",squat:"Squat",pull:"Pull-up",leg:"Leg raise",bridge:"Bridge",hspu:"Handstand"},
+  mvLong:{hspu:"Handstand push-up"},
+  prog:{fresh:"New Blood",good:"Good Behavior",veteran:"Veterano",solitary:"Solitary Confinement",supermax:"Supermax"},
+  progDesc:{fresh:"2 days a week, 4 movements. For beginners, until you pass step 6 on all four.",
+    good:"3 days a week, all six movements. The best base program for almost anyone.",
+    veteran:"6 days a week, one movement a day. After a few months of training.",
+    solitary:"6 days a week, two movements a day. Advanced only, with great recovery.",
+    supermax:"Volume training for endurance. Only once you're past the ten steps."},
+  tiers:["Beginner","Intermediate","Progression"], tierShort:["B","I","P"],
+  step:"step", stepOf:(n)=>`Step ${n}`, sets:"sets",
+  rest:"Rest day", next:"Next workout", startToday:"Today's workout", free:"Free workout",
+  reps:"reps", secs:"sec", eachSide:"each side",
+  warm:"Warm-up", work:"Work set", doneWarm:"Warm-up done", logSet:(n)=>`Log set ${n}`,
+  skip:"Skip", addSet:"+ set", end:"End", nextMv:(m)=>`Next: ${m}`, finish:"Finish ✓",
+  tempo:"Tempo: 2 s down · 1 s pause · 2 s up", last:"Last time", goal:"Goal", restT:"Rest",
+  endQ:"End workout?", saveEnd:"Save & finish", discard:"Discard", keep:"Keep going",
+  levelUp:(n)=>`Progression standard hit! Move to step ${n}?`, goUp:"Yes, step up", stay:"Not yet",
+  stepBack:"You missed the beginner standard. The book says step back one and perfect your form.", goBack:"Step back", master:"Master step complete! 🏆",
+  noData:"No data at this step yet.", progressSub:"Where you are on the ten steps", chartFor:(m,n)=>`${m} – step ${n}, best set`,
+  program:"Program", yourSteps:"Current steps", language:"Language", data:"Data", export:"Export", import:"Import", reset:"Erase everything", resetQ:"Erase all data?",
+  body:"Body", save:"Save", latest:"Latest", min:"Min", max:"Max", pickMv:"Which movement?",
+  setsPerMv:"Work sets", days:["Su","Mo","Tu","We","Th","Fr","Sa"], dayNames:["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
+  extras:"The book adds grip, calf and neck work here – the app doesn't track those."
+ }
+};
+
+/* ============ State ============ */
+const $ = s => document.querySelector(s);
+const KEY = "fegyenc.v1";
+const fresh = () => ({ lang: (navigator.language||"").startsWith("hu") ? "hu" : "en", program:"fresh",
+  steps:{push:1,squat:1,pull:1,leg:1,bridge:1,hspu:1}, sessions:[], body:[] });
+let db;
+try { db = Object.assign(fresh(), JSON.parse(localStorage.getItem(KEY)) || {}); } catch { db = fresh(); }
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch {} };
+const t = () => T[db.lang];
+const buzz = p => { try { navigator.vibrate && navigator.vibrate(p); } catch {} };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const dayKey = d => { const x = new Date(d); return x.getFullYear()+"-"+(x.getMonth()+1)+"-"+x.getDate(); };
+const sName = (mv,n) => step(mv,n)[db.lang];
+const mvName = (mv,long) => (long && t().mvLong[mv]) || t().mv[mv];
+const fmtGoal = (st, g) => st.sec ? `${g[1]} ${t().secs}` : `${g[0]}×${g[1]}`;
+const fmtVal = (st, v) => st.sec ? `${v} ${t().secs}` : `${v}`;
+
+/* tiers met: work = array of reps/seconds at that step */
+function tiersMet(st, work){
+  return st.goals.map(([s,r]) => work.filter(x => x >= r).length >= s);
+}
+function history(mv, n){ // all work arrays at mv/step n, oldest first
+  const out = [];
+  db.sessions.forEach(s => s.items.forEach(it => { if (it.mv === mv && it.step === n && it.work.length) out.push({date:s.date, work:it.work}); }));
+  return out;
+}
+function bestTier(mv, n){
+  const st = step(mv,n); let best = -1;
+  history(mv,n).forEach(h => tiersMet(st,h.work).forEach((m,i) => { if (m && i > best) best = i; }));
+  return best;
+}
+
+/* ============ Tabs ============ */
 function show(id){
   document.querySelectorAll(".screen").forEach(s => s.classList.toggle("on", s.id === "s-"+id));
   $("#nav").classList.toggle("hide", id === "active");
   document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.t === id));
 }
 document.querySelectorAll("nav button").forEach(b => b.onclick = () => { show(b.dataset.t); render(b.dataset.t); });
-function render(t){ ({today:renderToday, progress:renderProgress, body:renderBody})[t](); }
+function render(id){ ({today:renderToday, progress:renderProgress, program:renderProgram, body:renderBody})[id](); }
+function labelTabs(){
+  document.documentElement.lang = db.lang;
+  document.querySelectorAll("nav button").forEach((b,i) => b.textContent = t().tabs[i]);
+}
 
-/* ---------- today ---------- */
-function lastSessionOf(name){
-  for (let i = db.sessions.length-1; i >= 0; i--) if (db.sessions[i].name === name) return db.sessions[i];
+/* ============ Today ============ */
+function tierPills(mv){
+  const n = db.steps[mv], st = step(mv,n), bt = bestTier(mv,n), cls = ["k","m","h"];
+  return `<div class="tiers">${st.goals.map((g,i)=>`<span class="tier ${cls[i]} ${i<=bt?"met":""}">${t().tierShort[i]} ${fmtGoal(st,g)}</span>`).join("")}</div>`;
+}
+function mvCard(mv){
+  const n = db.steps[mv];
+  return `<div class="card"><div class="info"><div class="name">${esc(mvName(mv,true))}</div>
+    <div class="meta">${t().stepOf(n)} · ${esc(sName(mv,n))}</div>${tierPills(mv)}</div>
+    <button class="play" data-mv="${mv}" aria-label="${esc(mvName(mv))}">▶</button></div>`;
 }
 function renderToday(){
-  const now = new Date();
-  $("#todayTitle").textContent = now.toLocaleDateString(undefined,{weekday:"long"});
-  $("#todaySub").textContent = now.toLocaleDateString(undefined,{day:"numeric",month:"long"});
+  const now = new Date(), P = PROGRAMS[db.program], today = P.days[now.getDay()] || [];
+  $("#todayTitle").textContent = t().dayNames[now.getDay()].replace(/^./, c => c.toUpperCase());
+  $("#todaySub").textContent = `${t().prog[db.program]} · ${now.toLocaleDateString(db.lang,{day:"numeric",month:"long"})}`;
   const done = new Set(db.sessions.map(s => dayKey(s.date)));
   const mon = new Date(now); mon.setDate(now.getDate() - ((now.getDay()+6)%7));
   $("#week").innerHTML = Array.from({length:7},(_,i)=>{
     const d = new Date(mon); d.setDate(mon.getDate()+i);
-    const k = dayKey(d);
-    return `<div class="day ${k===dayKey(now)?"today":""} ${done.has(k)?"done":""}">${d.toLocaleDateString(undefined,{weekday:"short"}).slice(0,2)}<b>${d.getDate()}</b></div>`;
+    return `<div class="day ${P.days[d.getDay()]?"train":""} ${dayKey(d)===dayKey(now)?"today":""} ${done.has(dayKey(d))?"done":""}">${t().days[d.getDay()]}<b>${d.getDate()}</b></div>`;
   }).join("");
-  $("#routines").innerHTML = db.routines.map((r,i)=>{
-    const last = lastSessionOf(r.name);
-    const when = last ? "Last: "+new Date(last.date).toLocaleDateString(undefined,{day:"numeric",month:"short"}) : "Not done yet";
-    return `<div class="card"><div class="info"><div class="name">${esc(r.name)}</div><div class="meta">${esc(r.ex.join(" · "))}</div><div class="meta">${when}</div></div><button class="play" data-r="${i}" aria-label="Start ${esc(r.name)}">▶</button></div>`;
-  }).join("");
-  document.querySelectorAll(".play").forEach(b => b.onclick = () => startWorkout(db.routines[b.dataset.r].name, db.routines[b.dataset.r].ex));
-}
-const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-$("#emptyBtn").onclick = () => startWorkout("Workout", []);
-
-/* ---------- active workout ---------- */
-let cur = null; // {name, ex:[...], sets:[{ex,w,r,t}], i, w, r}
-function startWorkout(name, ex){
-  cur = {name, ex:[...ex], sets:[], i:0, w:20, r:8, start:Date.now()};
-  show("active");
-  if (!cur.ex.length) { pickExercise(); return; }
-  loadDefaults(); renderActive();
-}
-const setsOf = ex => cur.sets.filter(s => s.ex === ex);
-function prevSets(ex){
-  for (let i = db.sessions.length-1; i >= 0; i--) {
-    const s = db.sessions[i].sets.filter(x => x.ex === ex);
-    if (s.length) return s;
+  let html = "";
+  if (today.length) html = today.map(mvCard).join("");
+  else {
+    let k = 1; while (k < 7 && !P.days[(now.getDay()+k)%7]) k++;
+    const nd = (now.getDay()+k)%7;
+    html = `<div class="rest"><b>${t().rest}</b><span class="meta">${t().next}: ${t().dayNames[nd]} – ${P.days[nd].map(m=>esc(mvName(m))).join(", ")}</span></div>`;
   }
-  return [];
+  $("#todayList").innerHTML = html;
+  document.querySelectorAll("#todayList .play").forEach(b => b.onclick = () => startWorkout([b.dataset.mv]));
+  $("#todayBtns").innerHTML = today.length
+    ? `<button class="big ghost" id="freeBtn">${t().free}</button><button class="big" id="goBtn">${t().startToday}</button>`
+    : `<button class="big" id="freeBtn">${t().free}</button>`;
+  $("#freeBtn").onclick = pickFree;
+  if (today.length) $("#goBtn").onclick = () => startWorkout(today);
 }
-// smart default: same set number from last session, else last set this session, else last session's final set
-function loadDefaults(){
-  const ex = cur.ex[cur.i]; if (!ex) return;
-  const mine = setsOf(ex), prev = prevSets(ex);
-  const src = prev[mine.length] || mine[mine.length-1] || prev[prev.length-1];
-  if (src) { cur.w = src.w; cur.r = src.r; }
+function pickFree(){
+  openSheet(`<h3>${t().pickMv}</h3>` + MV.map(m => `<button class="opt" data-a="${m}"><b>${esc(mvName(m,true))}</b> <span style="color:var(--mute)">· ${t().stepOf(db.steps[m])}</span></button>`).join(""),
+    a => startWorkout([a]));
 }
+
+/* ============ Active workout ============ */
+let W = null; // {mvs, mi, queue, items:[{mv,step,work,warm}], restStart}
+function buildQueue(mv){
+  const n = db.steps[mv], st = step(mv,n), q = [];
+  const P = PROGRAMS[db.program];
+  if (db.program !== "supermax") {
+    // Warm-ups from earlier steps of the same series (book: ~20 then ~15 reps)
+    const w = n >= 3 ? [n-2, n-1] : [n, n];
+    w.forEach((wn, i) => {
+      const ws = step(mv, wn), cap = ws.goals[2][1];
+      const v = ws.sec ? Math.max(5, Math.round(ws.goals[0][1]/2)) : Math.min(i ? 15 : 20, cap);
+      q.push({kind:"warm", step:wn, v, done:false});
+    });
+  }
+  const hist = history(mv,n), last = hist.length ? hist[hist.length-1].work : [];
+  const nextTier = Math.min(2, bestTier(mv,n)+1);
+  const count = db.program === "supermax" ? 10 : Math.max(P.minSets, st.goals[nextTier][0]);
+  for (let k = 0; k < count; k++) {
+    const v = db.program === "supermax" ? Math.min(10, st.goals[2][1]) : (last[k] ?? last[last.length-1] ?? st.goals[0][1]);
+    q.push({kind:"work", step:n, v, done:false});
+  }
+  return q;
+}
+function startWorkout(mvs){
+  W = {mvs:[...mvs], mi:0, items:[], restStart:null};
+  W.queue = buildQueue(mvs[0]);
+  show("active"); renderActive();
+}
+const curItem = () => W.queue.find(x => !x.done);
+const workStep = () => (W.queue.find(q => q.kind==="work") || {}).step || db.steps[W.mvs[W.mi]];
 function renderActive(){
-  const ex = cur.ex[cur.i];
-  if (!ex) { $("#activeTop").innerHTML = `<h2 class="exname">No exercise</h2><p class="hint">Add one to start.</p><button class="big" id="addEx">+ Exercise</button>`; $("#addEx").onclick = pickExercise; $("#logBtn").textContent="Log set"; paint(); return; }
-  const mine = setsOf(ex), prev = prevSets(ex);
-  $("#activeTop").innerHTML =
-    `<h2 class="exname">${esc(ex)}</h2>
-     <div class="dots">${cur.ex.map((_,k)=>`<i class="${k===cur.i?"on":""}"></i>`).join("")}</div>
-     <ul class="sets">${mine.map((s,k)=>`<li>Set ${k+1}<span>${fmt(s.w)} kg × ${s.r}</span></li>`).join("") || `<li><span>No sets yet</span></li>`}</ul>
-     ${prev.length ? `<p class="hint">Last time: ${prev.map(s=>fmt(s.w)+"×"+s.r).join(", ")}</p>` : ""}
-     <p class="hint">Swipe left/right to change exercise${cur.i===cur.ex.length-1 ? " · swipe left past the end to add one" : ""}</p>`;
-  $("#logBtn").textContent = "Log set " + (mine.length+1);
-  paint();
+  const mv = W.mvs[W.mi], n = workStep(), st = step(mv,n), cur = curItem();
+  const hist = history(mv,n), last = hist.length ? hist[hist.length-1].work : null;
+  let wi = 0;
+  const rows = W.queue.map(q => {
+    const qs = step(mv, q.step);
+    const label = q.kind === "warm" ? `${t().warm} · ${esc(sName(mv,q.step))}` : `${t().work} ${++wi}`;
+    return `<li class="${q===cur?"cur":""} ${q.done?"done":""}">${label}<span>${q.skipped ? "—" : fmtVal(qs,q.v)}${q.done&&!q.skipped?" ✓":""}</span></li>`;
+  }).join("");
+  $("#activeTop").innerHTML = `
+    <div class="mvname">${esc(mvName(mv,true))}${W.mvs.length>1?` · ${W.mi+1}/${W.mvs.length}`:""}</div>
+    <h2 class="exname">${t().stepOf(n)}: ${esc(sName(mv,n))}</h2>
+    <div class="goal">${t().goal}: ${st.goals.map((g,i)=>`${t().tiers[i]} ${fmtGoal(st,g)}`).join(" · ")}${st.side?` (${t().eachSide})`:""}</div>
+    <ul class="queue">${rows}</ul>
+    ${last ? `<p class="hint">${t().last}: ${last.map(v=>fmtVal(st,v)).join(", ")}</p>` : ""}
+    ${st.sec ? "" : `<p class="hint">${t().tempo}</p>`}
+    <p class="hint" id="restLine"></p>`;
+  const cs = cur ? step(mv, cur.step) : st;
+  $("#unitLbl").textContent = cs.sec ? t().secs : t().reps;
+  $("#valOut").textContent = cur ? cur.v : "–";
+  $("#endBtn").textContent = t().end;
+  const lb = $("#logBtn"), mb = $("#minorBtn");
+  lb.classList.toggle("warm", !!cur && cur.kind === "warm");
+  if (!cur) {
+    lb.textContent = W.mi < W.mvs.length-1 ? t().nextMv(mvName(W.mvs[W.mi+1])) : t().finish;
+    mb.textContent = t().addSet; mb.style.display = "";
+  } else if (cur.kind === "warm") {
+    lb.textContent = t().doneWarm; mb.textContent = t().skip; mb.style.display = "";
+  } else {
+    lb.textContent = t().logSet(W.queue.filter(q=>q.kind==="work").indexOf(cur)+1);
+    mb.style.display = "none";
+  }
+  tickRest();
 }
-function paint(){ $("#wOut").textContent = fmt(cur.w); $("#rOut").textContent = cur.r; }
+function tickRest(){
+  const el = $("#restLine"); if (!el || !W || !W.restStart) return;
+  const s = Math.floor((Date.now()-W.restStart)/1000);
+  el.innerHTML = `${t().restT}: <span class="timer">${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}</span>`;
+}
+setInterval(tickRest, 1000);
 document.querySelectorAll("[data-s]").forEach(b => b.onclick = () => {
-  const k = b.dataset.s;
-  if (k==="w+") cur.w += 2.5; if (k==="w-") cur.w = Math.max(0, cur.w-2.5);
-  if (k==="r+") cur.r += 1;   if (k==="r-") cur.r = Math.max(1, cur.r-1);
-  buzz(8); paint();
+  const cur = curItem(); if (!cur) return;
+  const sec = step(W.mvs[W.mi], cur.step).sec, d = sec ? 5 : 1;
+  cur.v = Math.max(sec ? 5 : 0, cur.v + (b.dataset.s === "+" ? d : -d));
+  buzz(8); $("#valOut").textContent = cur.v;
 });
 $("#logBtn").onclick = () => {
-  const ex = cur.ex[cur.i]; if (!ex) return;
-  cur.sets.push({ex, w:cur.w, r:cur.r, t:Date.now()});
-  buzz(40);
-  $("#logBtn").classList.remove("flash"); void $("#logBtn").offsetWidth; $("#logBtn").classList.add("flash");
-  loadDefaults(); renderActive();
+  const cur = curItem();
+  if (!cur) { nextMovement(); return; }
+  cur.done = true; W.restStart = Date.now();
+  buzz(cur.kind === "work" ? 40 : 15);
+  const lb = $("#logBtn"); lb.classList.remove("flash"); void lb.offsetWidth; lb.classList.add("flash");
+  renderActive();
+  if (!curItem()) evaluate();
 };
-function go(d){
-  const n = cur.i + d;
-  if (n >= cur.ex.length && d > 0) { pickExercise(); return; }
-  if (n < 0 || n >= cur.ex.length) return;
-  cur.i = n; loadDefaults(); renderActive(); buzz(10);
+$("#minorBtn").onclick = () => {
+  const cur = curItem();
+  if (cur && cur.kind === "warm") { cur.done = true; cur.skipped = true; renderActive(); return; }
+  if (!cur) { // extra work set
+    const works = W.queue.filter(q=>q.kind==="work");
+    W.queue.push({kind:"work", step:workStep(), v: works.length ? works[works.length-1].v : 5, done:false});
+    renderActive();
+  }
+};
+function commitMovement(){
+  const mv = W.mvs[W.mi];
+  const work = W.queue.filter(q => q.kind==="work" && q.done).map(q => q.v);
+  const warm = W.queue.filter(q => q.kind==="warm" && q.done && !q.skipped).length;
+  const existing = W.items.find(i => i.mv === mv);
+  if (existing) existing.work = work; else if (work.length) W.items.push({mv, step:workStep(), work, warm});
 }
-let sx = null;
-const act = $("#s-active");
-act.addEventListener("touchstart", e => { if (e.target.closest(".panel")) return; sx = e.touches[0].clientX; }, {passive:true});
-act.addEventListener("touchend", e => {
-  if (sx === null) return;
-  const dx = e.changedTouches[0].clientX - sx; sx = null;
-  if (Math.abs(dx) > 60) go(dx < 0 ? 1 : -1);
-});
+function evaluate(){
+  const mv = W.mvs[W.mi], n = workStep(), st = step(mv,n);
+  const work = W.queue.filter(q => q.kind==="work" && q.done).map(q => q.v);
+  commitMovement();
+  const met = tiersMet(st, work);
+  if (met[2]) {
+    buzz([60,40,60]);
+    if (n === 10) { openSheet(`<h3>${t().master}</h3><button class="opt primary" data-a="ok">OK</button>`, ()=>{}); return; }
+    openSheet(`<h3>${t().levelUp(n+1)}</h3><p class="sub">${esc(sName(mv,n+1))}</p>
+      <button class="opt primary" data-a="up">${t().goUp}</button><button class="opt" data-a="stay">${t().stay}</button>`,
+      a => { if (a === "up") { db.steps[mv] = n+1; save(); renderActive(); } });
+  } else if (n > 1 && work.length && Math.max(...work) < st.goals[0][1] && !history(mv,n).length) {
+    openSheet(`<h3>${t().stepBack}</h3>
+      <button class="opt primary" data-a="back">${t().goBack} (${t().stepOf(n-1)})</button><button class="opt" data-a="stay">${t().stay}</button>`,
+      a => { if (a === "back") { db.steps[mv] = n-1; save(); renderActive(); } });
+  }
+}
+function nextMovement(){
+  commitMovement();
+  if (W.mi < W.mvs.length-1) { W.mi++; W.queue = buildQueue(W.mvs[W.mi]); W.restStart = null; renderActive(); buzz(10); return; }
+  finishWorkout(true);
+}
+function finishWorkout(keep){
+  if (keep) commitMovement();
+  if (keep && W.items.length) { db.sessions.push({date:Date.now(), prog:db.program, items:W.items}); save(); }
+  W = null; show("today"); renderToday();
+}
 $("#endBtn").onclick = () => {
-  openSheet(`<h3 style="margin:4px 0 8px">End workout?</h3><p class="sub">${cur.sets.length} sets logged.</p>
-    <button class="opt" data-a="save"><b>Finish &amp; save</b></button>
-    <button class="opt" data-a="discard" style="color:#e11d48">Discard</button>
-    <button class="opt" data-a="cancel">Keep going</button>`, a => {
-    if (a === "save" && cur.sets.length) { db.sessions.push({date:Date.now(), name:cur.name, sets:cur.sets}); save(); }
-    if (a !== "cancel") { cur = null; show("today"); renderToday(); }
+  openSheet(`<h3>${t().endQ}</h3>
+    <button class="opt primary" data-a="save">${t().saveEnd}</button>
+    <button class="opt" data-a="discard" style="color:#e11d48">${t().discard}</button>
+    <button class="opt" data-a="cancel">${t().keep}</button>`, a => {
+    if (a === "save") finishWorkout(true); else if (a === "discard") finishWorkout(false);
   });
 };
 
-/* ---------- sheet ---------- */
+/* ============ Sheet ============ */
 function openSheet(html, onPick){
   $("#sheet").innerHTML = html; $("#sheetBg").classList.add("on");
-  $("#sheet").onclick = e => { const b = e.target.closest("[data-a]"); if (!b) return; closeSheet(); onPick(b.dataset.a, b); };
+  $("#sheet").onclick = e => { const b = e.target.closest("[data-a]"); if (!b) return; $("#sheetBg").classList.remove("on"); onPick(b.dataset.a); };
 }
-function closeSheet(){ $("#sheetBg").classList.remove("on"); }
-$("#sheetBg").onclick = e => { if (e.target.id === "sheetBg") closeSheet(); };
-function knownExercises(){
-  const s = new Set(); db.routines.forEach(r => r.ex.forEach(x => s.add(x))); db.sessions.forEach(x => x.sets.forEach(y => s.add(y.ex)));
-  return [...s].sort();
-}
-function pickExercise(){
-  const list = knownExercises().filter(x => !cur.ex.includes(x));
-  openSheet(`<h3 style="margin:4px 0 8px">Add exercise</h3>
-    <input id="newEx" placeholder="New exercise name…" autocomplete="off">
-    <button class="opt" data-a="__new"><b>+ Add typed name</b></button>
-    ${list.map(x => `<button class="opt" data-a="${esc(x)}">${esc(x)}</button>`).join("")}`, (a) => {
-    const name = a === "__new" ? $("#newEx").value.trim() : a;
-    if (!name) { if (!cur.ex.length) { cur = null; show("today"); } return; }
-    cur.ex.push(name); cur.i = cur.ex.length-1; loadDefaults(); renderActive();
-  });
-}
+$("#sheetBg").onclick = e => { if (e.target.id === "sheetBg") $("#sheetBg").classList.remove("on"); };
 
-/* ---------- charts ---------- */
-function lineChart(pts, unit){
-  if (pts.length < 2) return `<div class="empty">${pts.length ? fmt(pts[0].y)+" "+unit+" — log one more to see a trend" : "No data yet"}</div>`;
-  const W=360,H=200,p=28, xs=pts.map(q=>q.x), ys=pts.map(q=>q.y);
-  const x0=Math.min(...xs), x1=Math.max(...xs), lo=Math.min(...ys), hi=Math.max(...ys), pad=(hi-lo)||1;
-  const y0=lo-pad*.15, y1=hi+pad*.15;
-  const X = v => p + (W-2*p)*(v-x0)/((x1-x0)||1), Y = v => H-p - (H-2*p)*(v-y0)/(y1-y0);
-  const d = pts.map((q,i)=>(i?"L":"M")+X(q.x).toFixed(1)+" "+Y(q.y).toFixed(1)).join(" ");
-  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Trend chart">
-    <path d="${d}" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
-    ${pts.map(q=>`<circle cx="${X(q.x).toFixed(1)}" cy="${Y(q.y).toFixed(1)}" r="4" fill="var(--accent)"/>`).join("")}
-    <text x="${p}" y="16" fill="var(--mute)" font-size="12">${fmt(hi)} ${unit}</text>
-    <text x="${p}" y="${H-6}" fill="var(--mute)" font-size="12">${fmt(lo)} ${unit}</text>
-    <text x="${W-p}" y="${H-6}" fill="var(--mute)" font-size="12" text-anchor="end">${new Date(x1).toLocaleDateString(undefined,{day:"numeric",month:"short"})}</text></svg>`;
-}
-const stat = (l,v) => `<div class="stat"><small>${l}</small><b>${v}</b></div>`;
-
-/* ---------- progress ---------- */
-let pgEx = null, pgMetric = "top";
+/* ============ Progress ============ */
+let pgMv = "push";
 function renderProgress(){
-  const exs = knownExercises().filter(x => db.sessions.some(s => s.sets.some(y => y.ex === x)));
-  $("#pgEx").innerHTML = exs.length ? exs.map(x => `<option ${x===pgEx?"selected":""}>${esc(x)}</option>`).join("") : `<option>No data yet</option>`;
-  if (!exs.length) { $("#pgSub").textContent = ""; $("#pgStats").innerHTML = ""; $("#pgChart").innerHTML = `<div class="empty">Finish a workout to see progress.</div>`; return; }
-  if (!exs.includes(pgEx)) pgEx = exs[0];
-  $("#pgEx").value = pgEx;
-  document.querySelectorAll("#pgMetric button").forEach(b => b.classList.toggle("on", b.dataset.m === pgMetric));
-  const pts = db.sessions.map(s => {
-    const x = s.sets.filter(y => y.ex === pgEx); if (!x.length) return null;
-    const v = {top: Math.max(...x.map(y=>y.w)), "1rm": Math.max(...x.map(y=>e1rm(y.w,y.r))), vol: x.reduce((a,y)=>a+y.w*y.r,0)}[pgMetric];
-    return {x:s.date, y:v};
-  }).filter(Boolean);
-  const unit = pgMetric === "vol" ? "kg·reps" : "kg";
-  $("#pgSub").textContent = pgEx;
-  const best = Math.max(...pts.map(q=>q.y)), last = pts[pts.length-1].y;
-  $("#pgStats").innerHTML = stat("Latest", fmt(last)) + stat("Best", fmt(best)) + stat("Sessions", pts.length);
-  $("#pgChart").innerHTML = lineChart(pts, unit);
+  $("#pgTitle").textContent = t().tabs[1];
+  $("#pgSub").textContent = t().progressSub;
+  $("#ladder").innerHTML = MV.map(m => {
+    const n = db.steps[m];
+    return `<div class="lrow"><span class="lname">${esc(mvName(m))}</span><span class="segs">${Array.from({length:10},(_,i)=>`<i class="${i<n-1?"on":i===n-1?"cur":""}"></i>`).join("")}</span><span class="lnum">${n}/10</span></div>`;
+  }).join("");
+  const n = db.steps[pgMv], st = step(pgMv,n);
+  const pts = history(pgMv,n).map(h => ({x:h.date, y:Math.max(...h.work)}));
+  $("#pgChart").innerHTML = `<div class="hint" style="margin:0 0 6px">${esc(t().chartFor(mvName(pgMv),n))}</div>` + chart(pts, st);
+  $("#pgPick").innerHTML = MV.map(m => `<button data-m="${m}" class="${m===pgMv?"on":""}">${esc(mvName(m))}</button>`).join("");
+  document.querySelectorAll("#pgPick button").forEach(b => b.onclick = () => { pgMv = b.dataset.m; buzz(8); renderProgress(); });
 }
-$("#pgEx").onchange = e => { pgEx = e.target.value; renderProgress(); };
-document.querySelectorAll("#pgMetric button").forEach(b => b.onclick = () => { pgMetric = b.dataset.m; renderProgress(); });
+function chart(pts, st){
+  if (!pts.length) return `<div class="empty">${t().noData}</div>`;
+  const W_=360, H=200, p=30, goals = st.goals.map(g=>g[1]);
+  const ys = pts.map(q=>q.y).concat(goals), hi = Math.max(...ys)*1.1, lo = 0;
+  const X = i => pts.length === 1 ? W_/2 : p + (W_-2*p)*i/(pts.length-1);
+  const Y = v => H-p - (H-2*p)*(v-lo)/(hi-lo);
+  const cols = ["var(--t1)","var(--t2)","var(--t3)"];
+  const lines = goals.map((g,i)=>`<line x1="${p}" x2="${W_-p}" y1="${Y(g)}" y2="${Y(g)}" stroke="${cols[i]}" stroke-dasharray="4 4"/><text x="${W_-p+3}" y="${Y(g)+4}" font-size="11" fill="${cols[i]}">${t().tierShort[i]}</text>`).join("");
+  const d = pts.map((q,i)=>(i?"L":"M")+X(i).toFixed(1)+" "+Y(q.y).toFixed(1)).join(" ");
+  return `<svg viewBox="0 0 ${W_} ${H}" role="img" aria-label="chart">${lines}
+    <path d="${d}" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linejoin="round"/>
+    ${pts.map((q,i)=>`<circle cx="${X(i).toFixed(1)}" cy="${Y(q.y).toFixed(1)}" r="4" fill="var(--accent)"/>`).join("")}
+    <text x="4" y="${Y(0)}" font-size="11" fill="var(--mute)">0</text></svg>`;
+}
 
-/* ---------- body ---------- */
+/* ============ Program ============ */
+function renderProgram(){
+  const P = PROGRAMS[db.program];
+  let h = `<h1>${t().program}</h1><p class="sub">${t().setsPerMv}: ${P.sets}</p>`;
+  h += Object.keys(PROGRAMS).map(k => `<button class="opt-card ${k===db.program?"on":""}" data-p="${k}"><b>${t().prog[k]}</b><small>${t().progDesc[k]}</small></button>`).join("");
+  if (db.program === "solitary") h += `<p class="hint">${t().extras}</p>`;
+  h += `<div class="section">${t().yourSteps}</div>`;
+  h += MV.map(m => `<div class="srow"><div class="sinfo"><b>${esc(mvName(m,true))}</b><small>${esc(sName(m,db.steps[m]))}</small></div>
+      <button data-st="${m}" data-d="-1" aria-label="−">−</button><span class="snum">${db.steps[m]}</span><button data-st="${m}" data-d="1" aria-label="+">+</button></div>`).join("");
+  h += `<div class="section">${t().language}</div><div class="btnrow">
+      <button class="small" data-l="hu" style="${db.lang==="hu"?"outline:2px solid var(--accent)":""}">Magyar</button>
+      <button class="small" data-l="en" style="${db.lang==="en"?"outline:2px solid var(--accent)":""}">English</button></div>`;
+  h += `<div class="section">${t().data}</div><div class="btnrow">
+      <button class="small" id="exportBtn">${t().export}</button><button class="small" id="importBtn">${t().import}</button>
+      <button class="small" id="resetBtn" style="color:#e11d48">${t().reset}</button></div>`;
+  $("#programTop").innerHTML = h;
+  document.querySelectorAll("[data-p]").forEach(b => b.onclick = () => { db.program = b.dataset.p; save(); buzz(10); renderProgram(); });
+  document.querySelectorAll("[data-st]").forEach(b => b.onclick = () => {
+    const m = b.dataset.st; db.steps[m] = Math.min(10, Math.max(1, db.steps[m] + Number(b.dataset.d))); save(); buzz(8); renderProgram();
+  });
+  document.querySelectorAll("[data-l]").forEach(b => b.onclick = () => { db.lang = b.dataset.l; save(); labelTabs(); renderProgram(); });
+  $("#exportBtn").onclick = exportData;
+  $("#importBtn").onclick = () => $("#importFile").click();
+  $("#resetBtn").onclick = () => { if (confirm(t().resetQ)) { const l = db.lang; db = fresh(); db.lang = l; save(); renderProgram(); } };
+}
+function exportData(){
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:"application/json"}));
+  a.download = "fegyencedzes-"+new Date().toISOString().slice(0,10)+".json"; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+}
+$("#importFile").onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  f.text().then(txt => { try { const d = JSON.parse(txt); if (d.steps && d.sessions) { db = Object.assign(fresh(), d); save(); labelTabs(); renderProgram(); } } catch {} });
+  e.target.value = "";
+};
+
+/* ============ Body ============ */
 let bw = null;
 function renderBody(){
+  $("#bodyTitle").textContent = t().body; $("#bwSave").textContent = t().save;
   const last = db.body[db.body.length-1];
   if (bw === null) bw = last ? last.kg : 75;
-  $("#bwOut").textContent = fmt(bw) + " kg";
-  const kgs = db.body.map(b=>b.kg);
-  $("#bwStats").innerHTML = last ? stat("Latest", fmt(last.kg)) + stat("Min", fmt(Math.min(...kgs))) + stat("Max", fmt(Math.max(...kgs))) : "";
-  $("#bwChart").innerHTML = lineChart(db.body.map(b=>({x:b.date,y:b.kg})), "kg");
+  $("#bwOut").textContent = bw.toFixed(1) + " kg";
+  const kgs = db.body.map(b=>b.kg), st = (l,v)=>`<div class="stat"><small>${l}</small><b>${v}</b></div>`;
+  $("#bwStats").innerHTML = last ? st(t().latest, last.kg.toFixed(1)) + st(t().min, Math.min(...kgs).toFixed(1)) + st(t().max, Math.max(...kgs).toFixed(1)) : "";
+  const pts = db.body.map(b=>({x:b.date,y:b.kg}));
+  if (pts.length < 2) { $("#bwChart").innerHTML = `<div class="empty">${pts.length ? last.kg.toFixed(1)+" kg" : t().noData}</div>`; return; }
+  const W_=360,H=180,p=28, ys=pts.map(q=>q.y), lo=Math.min(...ys)-1, hi=Math.max(...ys)+1;
+  const X=i=>p+(W_-2*p)*i/(pts.length-1), Y=v=>H-p-(H-2*p)*(v-lo)/(hi-lo);
+  $("#bwChart").innerHTML = `<svg viewBox="0 0 ${W_} ${H}"><path d="${pts.map((q,i)=>(i?"L":"M")+X(i)+" "+Y(q.y)).join(" ")}" fill="none" stroke="var(--accent)" stroke-width="3"/>
+    <text x="${p}" y="14" font-size="12" fill="var(--mute)">${hi.toFixed(1)}</text><text x="${p}" y="${H-6}" font-size="12" fill="var(--mute)">${lo.toFixed(1)}</text></svg>`;
 }
-document.querySelectorAll("[data-b]").forEach(b => b.onclick = () => { bw = Math.max(20, bw + (b.dataset.b==="+" ? .1 : -.1)); bw = Math.round(bw*10)/10; buzz(8); $("#bwOut").textContent = fmt(bw)+" kg"; });
+document.querySelectorAll("[data-b]").forEach(b => b.onclick = () => { bw = Math.max(20, Math.round((bw + (b.dataset.b==="+" ? .1 : -.1))*10)/10); buzz(8); $("#bwOut").textContent = bw.toFixed(1)+" kg"; });
 $("#bwSave").onclick = () => {
   const k = dayKey(Date.now());
   db.body = db.body.filter(b => dayKey(b.date) !== k);
   db.body.push({date:Date.now(), kg:bw}); save(); buzz(40); renderBody();
 };
-$("#exportBtn").onclick = () => {
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:"application/json"}));
-  a.download = "lift-export-"+dayKey(Date.now())+".json"; a.click();
-  setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
-};
 
-renderToday();
+labelTabs(); renderToday();
 </script>
 </body>
 </html>
