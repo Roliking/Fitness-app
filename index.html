@@ -113,20 +113,23 @@ nav.hide{display:none}
 @keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 /* home */
-.cal{background:var(--card);border-radius:18px;padding:10px 10px 8px}
-.calhead{display:flex;align-items:center;justify-content:space-between;margin:0 2px 6px}
+#s-home .top{display:flex;flex-direction:column;overflow:hidden;padding-bottom:4px}
+#s-home h1{flex:none;margin-bottom:10px}
+#s-home .bottom{padding-top:8px}
+.cal{flex:1;min-height:0;display:flex;flex-direction:column;background:var(--card);border-radius:18px;padding:10px 10px 8px}
+.calhead{flex:none;display:flex;align-items:center;justify-content:space-between;margin:0 2px 6px}
 .calhead b{font-size:17px}
 .calhead button{width:36px;height:36px;border-radius:12px;background:var(--bg);font-size:20px}
-.calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px 2px;text-align:center}
+.calgrid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(7,1fr);gap:3px 2px;text-align:center;align-items:center;justify-items:center}
 .calgrid .wd{font-size:12px;color:var(--mute);font-weight:600;padding-bottom:2px}
-.cd{aspect-ratio:1;display:grid;place-items:center;border-radius:50%;font-size:15px;font-weight:600;margin:0 auto;width:100%;max-width:36px}
+.cd{height:100%;max-height:44px;aspect-ratio:1;max-width:100%;display:grid;place-items:center;border-radius:50%;font-size:15px;font-weight:600}
 .cd.plan{box-shadow:inset 0 0 0 2px var(--accent)}
 .cd.done{background:var(--cal-ok);color:#fff}
 .cd.miss{background:var(--cal-miss);color:#fff}
 .cd.today{outline:2px solid var(--ink);outline-offset:1px}
-.legend{display:flex;gap:14px;justify-content:center;margin-top:6px;font-size:12px;color:var(--mute)}
+.legend{flex:none;display:flex;gap:14px;justify-content:center;margin-top:6px;font-size:12px;color:var(--mute)}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
-.wbar{display:flex;align-items:center;height:52px;background:var(--card);border-radius:16px;padding:0 6px 0 16px;border:1.5px solid var(--line);margin-bottom:8px}
+.wbar{display:flex;align-items:center;height:52px;background:var(--card);border-radius:16px;padding:0 6px 0 16px;border:1.5px solid var(--line)}
 .wbar:focus-within{border-color:var(--accent)}
 .wbar.bad{border-color:#e11d48;animation:shake .3s}
 .wbar .wl{font-weight:700;white-space:nowrap}
@@ -142,6 +145,8 @@ nav.hide{display:none}
 .bar .segs i{height:14px;border-radius:4px;border:1.5px solid var(--accent)}
 .bar .segs i.on{background:var(--accent)}
 .bar small{width:34px;flex:none;text-align:right;font-size:13px;color:var(--mute);font-weight:600}
+@media (max-height:720px){ .bar{height:28px} .bar .segs i{height:12px} #s-home h1{font-size:24px;margin-bottom:6px} #s-home .top{padding-top:12px} .calhead button{width:32px;height:32px} }
+@media (max-height:600px){ .bar{height:24px} .bar .segs i{height:10px} .legend{display:none} }
 /* sheet */
 .sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-end;z-index:9}
 .sheet-bg.on{display:flex}
@@ -155,11 +160,10 @@ nav.hide{display:none}
 <div id="app">
   <section class="screen on" id="s-home">
     <div class="top">
-      <h1 id="homeTitle" style="margin-bottom:10px"></h1>
+      <h1 id="homeTitle"></h1>
       <div class="cal" id="cal"></div>
     </div>
     <div class="bottom">
-      <label class="wbar" id="kgField"><span class="wl" id="wLabel"></span><input id="bwIn" type="text" inputmode="decimal" autocomplete="off" enterkeyhint="done" aria-label="kg"><span class="wu">kg</span><button class="wok" id="bwSave" type="button" aria-label="Save">✓</button></label>
       <div class="bars" id="bars"></div>
     </div>
   </section>
@@ -197,6 +201,7 @@ nav.hide{display:none}
 
   <section class="screen" id="s-program">
     <div class="top" id="programTop"></div>
+    <div class="bottom"><label class="wbar" id="kgField"><span class="wl" id="wLabel"></span><input id="bwIn" type="text" inputmode="decimal" autocomplete="off" enterkeyhint="done" aria-label="kg"><span class="wu">kg</span><button class="wok" id="bwSave" type="button" aria-label="Save">✓</button></label></div>
   </section>
 
   <nav id="nav">
@@ -631,6 +636,9 @@ function renderProgram(){
       <button class="small" id="resetBtn" style="color:#e11d48">${t().reset}</button></div>`;
   $("#programTop").innerHTML = h;
   renderWeightHistory();
+  $("#wLabel").textContent = t().bodyWeight;
+  const lastW = db.body[db.body.length-1];
+  $("#bwIn").placeholder = lastW ? fmtKg(lastW.kg) : `00${DEC}0`;
   document.querySelectorAll("[data-p]").forEach(b => b.onclick = () => { db.program = b.dataset.p; save(); buzz(10); renderProgram(); });
   document.querySelectorAll("[data-st]").forEach(b => b.onclick = () => {
     const m = b.dataset.st; db.steps[m] = Math.min(10, Math.max(1, db.steps[m] + Number(b.dataset.d))); save(); buzz(8); renderProgram();
@@ -686,7 +694,7 @@ function saveWeight(){
   const k = dayKey(Date.now());
   db.body = db.body.filter(b => dayKey(b.date) !== k);
   db.body.push({date:Date.now(), kg}); save(); buzz(40);
-  inp.value = ""; inp.blur(); $("#kgField").classList.remove("has"); renderHome();
+  inp.value = ""; inp.blur(); $("#kgField").classList.remove("has"); renderProgram();
 }
 $("#bwSave").onclick = e => { e.preventDefault(); saveWeight(); };
 
@@ -694,10 +702,6 @@ $("#bwSave").onclick = e => { e.preventDefault(); saveWeight(); };
 let calOff = 0; // months from the current one
 function renderHome(){
   $("#homeTitle").textContent = t().calendar;
-  $("#wLabel").textContent = t().bodyWeight;
-  const last = db.body[db.body.length-1];
-  $("#bwIn").placeholder = last ? fmtKg(last.kg) : `00${DEC}0`;
-  // calendar
   const now = new Date(), P = PROGRAMS[db.program];
   const first = new Date(now.getFullYear(), now.getMonth() + calOff, 1);
   const days = new Date(first.getFullYear(), first.getMonth()+1, 0).getDate();
@@ -714,7 +718,7 @@ function renderHome(){
   }
   const title = first.toLocaleDateString(db.lang, {month:"long", year:"numeric"});
   $("#cal").innerHTML = `<div class="calhead"><button id="calPrev" aria-label="‹">‹</button><b>${title.replace(/^./, c => c.toUpperCase())}</b><button id="calNext" aria-label="›">›</button></div>
-    <div class="calgrid">${g}</div>
+    <div class="calgrid" style="grid-template-rows:auto repeat(${Math.ceil((lead+days)/7)},minmax(0,1fr))">${g}</div>
     <div class="legend"><span><i style="background:var(--cal-ok)"></i>${t().legDone}</span><span><i style="background:var(--cal-miss)"></i>${t().legMiss}</span><span><i style="box-shadow:inset 0 0 0 2px var(--accent)"></i>${t().legPlan}</span></div>`;
   $("#calPrev").onclick = () => { calOff--; renderHome(); };
   $("#calNext").onclick = () => { calOff++; renderHome(); };
