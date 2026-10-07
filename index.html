@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="hu">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#14161a">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Fegyencedzés</title>
+<title>Convict Conditioning</title>
 <style>
 :root{
   --bg:#f4f5f7; --card:#fff; --ink:#14161a; --mute:#6b7280; --line:#e3e5ea;
@@ -331,7 +331,7 @@ const T = {
 /* ============ State ============ */
 const $ = s => document.querySelector(s);
 const KEY = "fegyenc.v1";
-const fresh = () => ({ lang: (navigator.language||"").startsWith("hu") ? "hu" : "en", program:"fresh",
+const fresh = () => ({ lang: "en", program:"fresh",
   steps:{push:1,squat:1,pull:1,leg:1,bridge:1,hspu:1}, sessions:[], body:[] });
 let db;
 try { db = Object.assign(fresh(), JSON.parse(localStorage.getItem(KEY)) || {}); } catch { db = fresh(); }
@@ -616,7 +616,7 @@ function renderProgram(){
 function exportData(){
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:"application/json"}));
-  a.download = "fegyencedzes-"+new Date().toISOString().slice(0,10)+".json"; a.click();
+  a.download = "convict-conditioning-"+new Date().toISOString().slice(0,10)+".json"; a.click();
   setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
 }
 $("#importFile").onchange = e => {
