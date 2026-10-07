@@ -9,7 +9,7 @@
 <style>
 :root{
   --bg:#f4f5f7; --card:#fff; --ink:#14161a; --mute:#6b7280; --line:#e3e5ea;
-  --accent:#ff5a1f; --ok:#16a34a; --panel:#14161a; --panel-ink:#fff; --panel-2:#23262d;
+  --accent:#ff8c1a; --on-accent:#14161a; --ok:#16a34a; --cal-ok:#22c55e; --cal-miss:#ef4444; --fill:rgba(255,140,26,.38); --panel:#14161a; --panel-ink:#fff; --panel-2:#23262d;
   --t1:#f59e0b; --t2:#3b82f6; --t3:#16a34a;
 }
 @media (prefers-color-scheme: dark){
@@ -30,25 +30,26 @@ h3{margin:4px 0 10px}
 .day{flex:1;text-align:center;padding:8px 0;border-radius:12px;background:var(--card);font-size:12px;color:var(--mute);border:2px solid transparent}
 .day b{display:block;font-size:17px;color:var(--ink)}
 .day.train{border-color:var(--line)}
-.day.today{background:var(--accent);color:#fff} .day.today b{color:#fff}
+.day.today{background:var(--accent);color:var(--on-accent)} .day.today b{color:var(--on-accent)}
 .day.done::after{content:"";display:block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin:4px auto 0}
-.day.today.done::after{background:#fff}
+.day.today.done::after{background:var(--on-accent)}
 .card{display:flex;align-items:center;background:var(--card);border-radius:18px;padding:16px;margin-bottom:12px;gap:12px}
 .card .info{flex:1;min-width:0}
 .card .name{font-weight:700;font-size:18px}
 .card .meta{color:var(--mute);font-size:14px}
 .rest{background:var(--card);border-radius:18px;padding:20px;margin-bottom:12px}
 .rest b{font-size:20px;display:block;margin-bottom:4px}
-.play{width:64px;height:64px;border-radius:50%;background:var(--accent);color:#fff;font-size:24px;flex:none}
-.big{min-height:64px;border-radius:18px;padding:0 24px;font-weight:700;font-size:18px;background:var(--accent);color:#fff}
+.play{width:64px;height:64px;border-radius:50%;background:var(--accent);color:var(--on-accent);font-size:24px;flex:none}
+.big{min-height:64px;border-radius:18px;padding:0 24px;font-weight:700;font-size:18px;background:var(--accent);color:var(--on-accent)}
 .ghost{background:var(--card);color:var(--ink)}
 .row-end{display:flex;justify-content:flex-end;gap:10px}
 .tiers{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
 .tier{font-size:12px;font-weight:700;padding:3px 8px;border-radius:999px;background:var(--line);color:var(--mute)}
 .tier.met{color:#fff} .tier.met.k{background:var(--t1)} .tier.met.m{background:var(--t2)} .tier.met.h{background:var(--t3)}
-nav{flex:none;display:flex;height:calc(64px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:var(--card);border-top:1px solid var(--line)}
-nav button{flex:1;font-size:13px;color:var(--mute);font-weight:600}
-nav button.on{color:var(--accent)}
+nav{flex:none;display:flex;gap:10px;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:var(--bg)}
+nav button{flex:1;height:54px;border-radius:999px;border:1.5px solid var(--accent);color:var(--ink);display:grid;place-items:center}
+nav button svg{width:28px;height:28px}
+nav button.on{background:var(--accent);border:1px solid #000;color:#000}
 nav.hide{display:none}
 /* active */
 .mvname{font-size:14px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.06em}
@@ -71,8 +72,8 @@ nav.hide{display:none}
 .actions{display:flex;align-items:center;gap:10px}
 .end{height:56px;padding:0 16px;border-radius:14px;background:var(--panel-2);color:#ff8a8a;font-weight:700}
 .minor{height:56px;padding:0 14px;border-radius:14px;background:var(--panel-2);color:#fff;font-weight:600}
-.log{flex:1;height:72px;border-radius:22px;background:var(--accent);color:#fff;font-size:19px;font-weight:800;padding:0 12px}
-.log.warm{background:#4a505c}
+.log{flex:1;height:72px;border-radius:22px;background:var(--accent);color:var(--on-accent);font-size:19px;font-weight:800;padding:0 12px}
+.log.warm{background:#4a505c;color:#fff}
 .log:active,.play:active,.big:active{transform:scale(.97)}
 .flash{animation:flash .35s}
 @keyframes flash{50%{background:var(--ok)}}
@@ -109,27 +110,59 @@ nav.hide{display:none}
 .stat{background:var(--card);border-radius:14px;padding:12px}
 .stat small{display:block;color:var(--mute);font-size:12px}
 .stat b{font-size:20px}
-.bw{display:flex;gap:10px;align-items:center}
-.kgfield{flex:1;display:flex;align-items:center;height:64px;background:var(--card);border-radius:18px;padding:0 18px;border:2px solid transparent}
-.kgfield:focus-within{border-color:var(--accent)}
-.kgfield.bad{border-color:#e11d48;animation:shake .3s}
 @keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
-.kgfield input{flex:1;min-width:0;width:100%;border:0;outline:0;background:none;color:var(--ink);font:inherit;font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;text-align:right;padding:0}
-.kgfield input::placeholder{color:var(--mute);opacity:.45}
-.kgfield span{margin-left:8px;font-size:20px;font-weight:700;color:var(--mute)}
 .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+/* home */
+.cal{background:var(--card);border-radius:18px;padding:10px 10px 8px}
+.calhead{display:flex;align-items:center;justify-content:space-between;margin:0 2px 6px}
+.calhead b{font-size:17px}
+.calhead button{width:36px;height:36px;border-radius:12px;background:var(--bg);font-size:20px}
+.calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px 2px;text-align:center}
+.calgrid .wd{font-size:12px;color:var(--mute);font-weight:600;padding-bottom:2px}
+.cd{aspect-ratio:1;display:grid;place-items:center;border-radius:50%;font-size:15px;font-weight:600;margin:0 auto;width:100%;max-width:36px}
+.cd.plan{box-shadow:inset 0 0 0 2px var(--accent)}
+.cd.done{background:var(--cal-ok);color:#fff}
+.cd.miss{background:var(--cal-miss);color:#fff}
+.cd.today{outline:2px solid var(--ink);outline-offset:1px}
+.legend{display:flex;gap:14px;justify-content:center;margin-top:6px;font-size:12px;color:var(--mute)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.wbar{display:flex;align-items:center;height:52px;background:var(--card);border-radius:16px;padding:0 6px 0 16px;border:1.5px solid var(--line);margin-bottom:8px}
+.wbar:focus-within{border-color:var(--accent)}
+.wbar.bad{border-color:#e11d48;animation:shake .3s}
+.wbar .wl{font-weight:700;white-space:nowrap}
+.wbar input{flex:1;min-width:0;width:100%;border:0;outline:0;background:none;color:var(--ink);font:inherit;font-size:24px;font-weight:800;font-variant-numeric:tabular-nums;text-align:right;padding:0}
+.wbar input::placeholder{color:var(--mute);opacity:.45}
+.wbar .wu{margin:0 8px 0 6px;font-weight:700;color:var(--mute)}
+.wbar .wok{width:44px;height:44px;border-radius:12px;background:var(--accent);color:var(--on-accent);font-size:20px;font-weight:800;visibility:hidden}
+.wbar.has .wok{visibility:visible}
+.bars{background:var(--card);border-radius:18px;padding:6px;display:grid;gap:4px}
+.bar{position:relative;display:flex;align-items:center;justify-content:space-between;width:100%;height:38px;padding:0 14px;border-radius:10px;border:1.5px solid var(--line);overflow:hidden;font-weight:700;text-align:left}
+.bar i{position:absolute;left:0;top:0;bottom:0;background:var(--fill);border-right:3px solid var(--accent)}
+.bar span{position:relative}
+.bar small{position:relative;color:var(--mute);font-weight:600}
 /* sheet */
 .sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-end;z-index:9}
 .sheet-bg.on{display:flex}
 .sheet{width:100%;max-width:560px;margin:0 auto;background:var(--card);border-radius:28px 28px 0 0;padding:20px 16px calc(16px + env(safe-area-inset-bottom));max-height:80vh;overflow:auto}
 .sheet button.opt{display:block;width:100%;text-align:left;min-height:56px;padding:0 14px;border-radius:14px;font-size:17px}
 .sheet button.opt:active{background:var(--line)}
-.sheet button.opt.primary{background:var(--accent);color:#fff;font-weight:700;margin-bottom:6px}
+.sheet button.opt.primary{background:var(--accent);color:var(--on-accent);font-weight:700;margin-bottom:6px}
 </style>
 </head>
 <body>
 <div id="app">
-  <section class="screen on" id="s-today">
+  <section class="screen on" id="s-home">
+    <div class="top">
+      <h1 id="homeTitle" style="margin-bottom:10px"></h1>
+      <div class="cal" id="cal"></div>
+    </div>
+    <div class="bottom">
+      <label class="wbar" id="kgField"><span class="wl" id="wLabel"></span><input id="bwIn" type="text" inputmode="decimal" autocomplete="off" enterkeyhint="done" aria-label="kg"><span class="wu">kg</span><button class="wok" id="bwSave" type="button" aria-label="Save">✓</button></label>
+      <div class="bars" id="bars"></div>
+    </div>
+  </section>
+
+  <section class="screen" id="s-today">
     <div class="top">
       <h1 id="todayTitle"></h1>
       <p class="sub" id="todaySub"></p>
@@ -164,25 +197,11 @@ nav.hide{display:none}
     <div class="top" id="programTop"></div>
   </section>
 
-  <section class="screen" id="s-body">
-    <div class="top">
-      <div class="topbar"><h1 id="bodyTitle"></h1></div>
-      <div class="stats" id="bwStats"></div>
-      <div class="chart" id="bwChart"></div>
-    </div>
-    <div class="bottom">
-      <div class="bw">
-        <label class="kgfield" id="kgField"><input id="bwIn" type="text" inputmode="decimal" autocomplete="off" enterkeyhint="done" aria-label="kg"><span>kg</span></label>
-        <button class="big" id="bwSave"></button>
-      </div>
-    </div>
-  </section>
-
   <nav id="nav">
-    <button data-t="today" class="on"></button>
-    <button data-t="progress"></button>
-    <button data-t="program"></button>
-    <button data-t="body"></button>
+    <button data-t="home" class="on"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 2.5 11h2.5v9.5h5.5v-6h3v6H19V11h2.5z"/></svg></button>
+    <button data-t="progress"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5,17 8,10.5 12.5,14.5 21.5,6.5"/><circle cx="8" cy="10.5" r="1.4" fill="currentColor"/><circle cx="12.5" cy="14.5" r="1.4" fill="currentColor"/><circle cx="21.5" cy="6.5" r="1.4" fill="currentColor"/></svg></button>
+    <button data-t="today"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="4.5" cy="8.5" r="2.3" fill="currentColor" stroke="none"/><path d="M7 10.5 22 17.5M8.5 11.2V18"/></svg></button>
+    <button data-t="program"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="7.5" r="4.3"/><path d="M3.5 21.5c0-4.9 3.8-8.3 8.5-8.3s8.5 3.4 8.5 8.3z"/></svg></button>
   </nav>
 </div>
 
@@ -279,7 +298,7 @@ const PROGRAMS = {
 /* ============ i18n ============ */
 const T = {
  hu: {
-  tabs:["Ma","Fejlődés","Program","Test"],
+  tabs:["Főoldal","Fejlődés","Edzés","Profil"], calendar:"Naptár", bodyWeight:"Testsúly", legDone:"Edzettél", legMiss:"Kimaradt", legPlan:"Tervezett",
   mv:{push:"Fekvőtámasz",squat:"Guggolás",pull:"Húzódzkodás",leg:"Lábemelés",bridge:"Híd",hspu:"Kézenállás"},
   mvLong:{hspu:"Fekvőtámasz kézenállásban"},
   prog:{fresh:"Friss hús",good:"Jó magaviselet",veteran:"Veterán",solitary:"Magánzárka",supermax:"Supermax"},
@@ -305,7 +324,7 @@ const T = {
   extras:"A könyv itt fogás-, vádli- és nyakgyakorlatokat is ad – ezeket az app nem követi."
  },
  en: {
-  tabs:["Today","Progress","Program","Body"],
+  tabs:["Home","Progress","Workout","Profile"], calendar:"Calendar", bodyWeight:"Body weight", legDone:"Trained", legMiss:"Missed", legPlan:"Planned",
   mv:{push:"Push-up",squat:"Squat",pull:"Pull-up",leg:"Leg raise",bridge:"Bridge",hspu:"Handstand"},
   mvLong:{hspu:"Handstand push-up"},
   prog:{fresh:"New Blood",good:"Good Behavior",veteran:"Veterano",solitary:"Solitary Confinement",supermax:"Supermax"},
@@ -339,6 +358,7 @@ const fresh = () => ({ lang: "en", program:"fresh",
   steps:{push:1,squat:1,pull:1,leg:1,bridge:1,hspu:1}, sessions:[], body:[] });
 let db;
 try { db = Object.assign(fresh(), JSON.parse(localStorage.getItem(KEY)) || {}); } catch { db = fresh(); }
+if (!db.since) { db.since = db.sessions.length ? Math.min(...db.sessions.map(s => s.date)) : Date.now(); try { localStorage.setItem(KEY, JSON.stringify(db)); } catch {} }
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch {} };
 const t = () => T[db.lang];
 const buzz = p => { try { navigator.vibrate && navigator.vibrate(p); } catch {} };
@@ -371,10 +391,10 @@ function show(id){
   document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.t === id));
 }
 document.querySelectorAll("nav button").forEach(b => b.onclick = () => { show(b.dataset.t); render(b.dataset.t); });
-function render(id){ ({today:renderToday, progress:renderProgress, program:renderProgram, body:renderBody})[id](); }
+function render(id){ ({home:renderHome, today:renderToday, progress:renderProgress, program:renderProgram})[id](); }
 function labelTabs(){
   document.documentElement.lang = db.lang;
-  document.querySelectorAll("nav button").forEach((b,i) => b.textContent = t().tabs[i]);
+  document.querySelectorAll("nav button").forEach((b,i) => { b.setAttribute("aria-label", t().tabs[i]); b.title = t().tabs[i]; });
 }
 
 /* ============ Today ============ */
@@ -544,7 +564,7 @@ function nextMovement(){
 function finishWorkout(keep){
   if (keep) commitMovement();
   if (keep && W.items.length) { db.sessions.push({date:Date.now(), prog:db.program, items:W.items}); save(); }
-  W = null; show("today"); renderToday();
+  W = null; show("home"); renderHome();
 }
 $("#endBtn").onclick = () => {
   openSheet(`<h3>${t().endQ}</h3>
@@ -594,7 +614,8 @@ function chart(pts, st){
 /* ============ Program ============ */
 function renderProgram(){
   const P = PROGRAMS[db.program];
-  let h = `<h1>${t().program}</h1><p class="sub">${t().setsPerMv}: ${P.sets}</p>`;
+  let h = `<h1>${t().tabs[3]}</h1><div class="section">${t().bodyWeight}</div><div class="stats" id="bwStats"></div><div class="chart" id="bwChart"></div>`;
+  h += `<div class="section">${t().program} · ${t().setsPerMv}: ${P.sets}</div>`;
   h += Object.keys(PROGRAMS).map(k => `<button class="opt-card ${k===db.program?"on":""}" data-p="${k}"><b>${t().prog[k]}</b><small>${t().progDesc[k]}</small></button>`).join("");
   if (db.program === "solitary") h += `<p class="hint">${t().extras}</p>`;
   h += `<div class="section">${t().yourSteps}</div>`;
@@ -607,6 +628,7 @@ function renderProgram(){
       <button class="small" id="exportBtn">${t().export}</button><button class="small" id="importBtn">${t().import}</button>
       <button class="small" id="resetBtn" style="color:#e11d48">${t().reset}</button></div>`;
   $("#programTop").innerHTML = h;
+  renderWeightHistory();
   document.querySelectorAll("[data-p]").forEach(b => b.onclick = () => { db.program = b.dataset.p; save(); buzz(10); renderProgram(); });
   document.querySelectorAll("[data-st]").forEach(b => b.onclick = () => {
     const m = b.dataset.st; db.steps[m] = Math.min(10, Math.max(1, db.steps[m] + Number(b.dataset.d))); save(); buzz(8); renderProgram();
@@ -632,10 +654,8 @@ $("#importFile").onchange = e => {
 // Decimal sign the phone's keyboard produces (e.g. "," for Hungarian, "." for English)
 const DEC = (1.5).toLocaleString(navigator.language || "en").replace(/\d/g, "")[0] || ".";
 const fmtKg = v => v.toFixed(1).replace(".", DEC);
-function renderBody(){
-  $("#bodyTitle").textContent = t().body; $("#bwSave").textContent = t().save;
+function renderWeightHistory(){
   const last = db.body[db.body.length-1];
-  $("#bwIn").placeholder = last ? fmtKg(last.kg) : `00${DEC}0`;
   const kgs = db.body.map(b=>b.kg), st = (l,v)=>`<div class="stat"><small>${l}</small><b>${v}</b></div>`;
   $("#bwStats").innerHTML = last ? st(t().latest, fmtKg(last.kg)) + st(t().min, fmtKg(Math.min(...kgs))) + st(t().max, fmtKg(Math.max(...kgs))) : "";
   const pts = db.body.map(b=>({x:b.date,y:b.kg}));
@@ -653,6 +673,7 @@ $("#bwIn").addEventListener("input", e => {
   else v = v.slice(0, 3);
   e.target.value = v;
   $("#kgField").classList.remove("bad");
+  $("#kgField").classList.toggle("has", v.length > 0);
 });
 function saveWeight(){
   const inp = $("#bwIn"), raw = inp.value || "";
@@ -663,12 +684,48 @@ function saveWeight(){
   const k = dayKey(Date.now());
   db.body = db.body.filter(b => dayKey(b.date) !== k);
   db.body.push({date:Date.now(), kg}); save(); buzz(40);
-  inp.value = ""; inp.blur(); renderBody();
+  inp.value = ""; inp.blur(); $("#kgField").classList.remove("has"); renderHome();
 }
-$("#bwSave").onclick = saveWeight;
+$("#bwSave").onclick = e => { e.preventDefault(); saveWeight(); };
+
+/* ============ Home ============ */
+let calOff = 0; // months from the current one
+function renderHome(){
+  $("#homeTitle").textContent = t().calendar;
+  $("#wLabel").textContent = t().bodyWeight;
+  const last = db.body[db.body.length-1];
+  $("#bwIn").placeholder = last ? fmtKg(last.kg) : `00${DEC}0`;
+  // calendar
+  const now = new Date(), P = PROGRAMS[db.program];
+  const first = new Date(now.getFullYear(), now.getMonth() + calOff, 1);
+  const days = new Date(first.getFullYear(), first.getMonth()+1, 0).getDate();
+  const lead = (first.getDay()+6) % 7; // Monday first
+  const done = new Set(db.sessions.map(s => dayKey(s.date)));
+  const today0 = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const since = new Date(db.since); const since0 = new Date(since.getFullYear(), since.getMonth(), since.getDate()).getTime();
+  let g = [1,2,3,4,5,6,0].map(d => `<div class="wd">${t().days[d]}</div>`).join("") + "<div></div>".repeat(lead);
+  for (let d = 1; d <= days; d++) {
+    const dt = new Date(first.getFullYear(), first.getMonth(), d), ts = dt.getTime(), k = dayKey(dt);
+    const planned = !!P.days[dt.getDay()];
+    const cls = done.has(k) ? "done" : planned && ts < today0 && ts >= since0 ? "miss" : planned && ts >= today0 ? "plan" : "";
+    g += `<div class="cd ${cls} ${ts===today0?"today":""}">${d}</div>`;
+  }
+  const title = first.toLocaleDateString(db.lang, {month:"long", year:"numeric"});
+  $("#cal").innerHTML = `<div class="calhead"><button id="calPrev" aria-label="‹">‹</button><b>${title.replace(/^./, c => c.toUpperCase())}</b><button id="calNext" aria-label="›">›</button></div>
+    <div class="calgrid">${g}</div>
+    <div class="legend"><span><i style="background:var(--cal-ok)"></i>${t().legDone}</span><span><i style="background:var(--cal-miss)"></i>${t().legMiss}</span><span><i style="box-shadow:inset 0 0 0 2px var(--accent)"></i>${t().legPlan}</span></div>`;
+  $("#calPrev").onclick = () => { calOff--; renderHome(); };
+  $("#calNext").onclick = () => { calOff++; renderHome(); };
+  // movement bars: step progress, with the best tier reached on the current step as a fraction
+  $("#bars").innerHTML = MV.map(m => {
+    const n = db.steps[m], pct = Math.max(3, ((n-1) + (bestTier(m,n)+1)/3) * 10);
+    return `<button class="bar" data-m="${m}"><i style="width:${pct}%"></i><span>${esc(mvName(m))}</span><small>${n}/10</small></button>`;
+  }).join("");
+  document.querySelectorAll("#bars .bar").forEach(b => b.onclick = () => { pgMv = b.dataset.m; buzz(8); show("progress"); renderProgress(); });
+}
 $("#bwIn").addEventListener("keydown", e => { if (e.key === "Enter") saveWeight(); });
 
-labelTabs(); renderToday();
+labelTabs(); renderHome();
 </script>
 </body>
 </html>
