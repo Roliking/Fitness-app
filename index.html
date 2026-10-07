@@ -110,8 +110,13 @@ nav.hide{display:none}
 .stat small{display:block;color:var(--mute);font-size:12px}
 .stat b{font-size:20px}
 .bw{display:flex;gap:10px;align-items:center}
-.bw .stepper{flex:1;background:var(--card);margin:0;color:var(--ink)} .bw .stepper button{background:var(--line);color:var(--ink);width:56px;height:56px}
-.bw .stepper output{font-size:26px}
+.kgfield{flex:1;display:flex;align-items:center;height:64px;background:var(--card);border-radius:18px;padding:0 18px;border:2px solid transparent}
+.kgfield:focus-within{border-color:var(--accent)}
+.kgfield.bad{border-color:#e11d48;animation:shake .3s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.kgfield input{flex:1;min-width:0;width:100%;border:0;outline:0;background:none;color:var(--ink);font:inherit;font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;text-align:right;padding:0}
+.kgfield input::placeholder{color:var(--mute);opacity:.45}
+.kgfield span{margin-left:8px;font-size:20px;font-weight:700;color:var(--mute)}
 .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 /* sheet */
 .sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-end;z-index:9}
@@ -167,7 +172,7 @@ nav.hide{display:none}
     </div>
     <div class="bottom">
       <div class="bw">
-        <div class="stepper"><button data-b="-" aria-label="−">−</button><output id="bwOut"></output><button data-b="+" aria-label="+">+</button></div>
+        <label class="kgfield" id="kgField"><input id="bwIn" type="text" inputmode="decimal" autocomplete="off" enterkeyhint="done" aria-label="kg"><span>kg</span></label>
         <button class="big" id="bwSave"></button>
       </div>
     </div>
@@ -293,7 +298,7 @@ const T = {
   endQ:"Befejezed az edzést?", saveEnd:"Mentés és befejezés", discard:"Elvetés", keep:"Folytatom",
   levelUp:(n)=>`Haladó szint teljesítve! Jöhet a ${n}. lépés?`, goUp:"Igen, továbblépek", stay:"Még maradok",
   stepBack:"Nem lett meg a kezdő szint. A könyv szerint lépj vissza egyet, és tökéletesítsd a technikát.", goBack:"Visszalépek", master:"Mesterlépés teljesítve! 🏆",
-  noData:"Még nincs adat ezen a lépésen.", progressSub:"Koppints egy gyakorlatra a grafikonhoz", chartFor:(m,n)=>`${m} – ${n}. lépés, legjobb sorozat`,
+  noData:"Még nincs adat ezen a lépésen.", noWeights:"Még nincs mért testsúly.", progressSub:"Koppints egy gyakorlatra a grafikonhoz", chartFor:(m,n)=>`${m} – ${n}. lépés, legjobb sorozat`,
   program:"Program", yourSteps:"Jelenlegi lépések", language:"Nyelv", data:"Adatok", export:"Exportálás", import:"Importálás", reset:"Minden törlése", resetQ:"Biztosan törlöd az összes adatot?",
   body:"Test", save:"Mentés", latest:"Utolsó", min:"Min", max:"Max", pickMv:"Melyik gyakorlat?",
   setsPerMv:"Edző sorozatok", days:["V","H","K","Sze","Cs","P","Szo"], dayNames:["vasárnap","hétfő","kedd","szerda","csütörtök","péntek","szombat"],
@@ -319,7 +324,7 @@ const T = {
   endQ:"End workout?", saveEnd:"Save & finish", discard:"Discard", keep:"Keep going",
   levelUp:(n)=>`Progression standard hit! Move to step ${n}?`, goUp:"Yes, step up", stay:"Not yet",
   stepBack:"You missed the beginner standard. The book says step back one and perfect your form.", goBack:"Step back", master:"Master step complete! 🏆",
-  noData:"No data at this step yet.", progressSub:"Tap a movement below to chart it", chartFor:(m,n)=>`${m} – step ${n}, best set`,
+  noData:"No data at this step yet.", noWeights:"No weigh-ins yet.", progressSub:"Tap a movement below to chart it", chartFor:(m,n)=>`${m} – step ${n}, best set`,
   program:"Program", yourSteps:"Current steps", language:"Language", data:"Data", export:"Export", import:"Import", reset:"Erase everything", resetQ:"Erase all data?",
   body:"Body", save:"Save", latest:"Latest", min:"Min", max:"Max", pickMv:"Which movement?",
   setsPerMv:"Work sets", days:["Su","Mo","Tu","We","Th","Fr","Sa"], dayNames:["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
@@ -624,27 +629,44 @@ $("#importFile").onchange = e => {
 };
 
 /* ============ Body ============ */
-let bw = null;
+// Decimal sign the phone's keyboard produces (e.g. "," for Hungarian, "." for English)
+const DEC = (1.5).toLocaleString(navigator.language || "en").replace(/\d/g, "")[0] || ".";
+const fmtKg = v => v.toFixed(1).replace(".", DEC);
 function renderBody(){
   $("#bodyTitle").textContent = t().body; $("#bwSave").textContent = t().save;
   const last = db.body[db.body.length-1];
-  if (bw === null) bw = last ? last.kg : 75;
-  $("#bwOut").textContent = bw.toFixed(1) + " kg";
+  $("#bwIn").placeholder = last ? fmtKg(last.kg) : `00${DEC}0`;
   const kgs = db.body.map(b=>b.kg), st = (l,v)=>`<div class="stat"><small>${l}</small><b>${v}</b></div>`;
-  $("#bwStats").innerHTML = last ? st(t().latest, last.kg.toFixed(1)) + st(t().min, Math.min(...kgs).toFixed(1)) + st(t().max, Math.max(...kgs).toFixed(1)) : "";
+  $("#bwStats").innerHTML = last ? st(t().latest, fmtKg(last.kg)) + st(t().min, fmtKg(Math.min(...kgs))) + st(t().max, fmtKg(Math.max(...kgs))) : "";
   const pts = db.body.map(b=>({x:b.date,y:b.kg}));
-  if (pts.length < 2) { $("#bwChart").innerHTML = `<div class="empty">${pts.length ? last.kg.toFixed(1)+" kg" : t().noData}</div>`; return; }
+  if (pts.length < 2) { $("#bwChart").innerHTML = `<div class="empty">${pts.length ? fmtKg(last.kg)+" kg" : t().noWeights}</div>`; return; }
   const W_=360,H=180,p=28, ys=pts.map(q=>q.y), lo=Math.min(...ys)-1, hi=Math.max(...ys)+1;
   const X=i=>p+(W_-2*p)*i/(pts.length-1), Y=v=>H-p-(H-2*p)*(v-lo)/(hi-lo);
   $("#bwChart").innerHTML = `<svg viewBox="0 0 ${W_} ${H}"><path d="${pts.map((q,i)=>(i?"L":"M")+X(i)+" "+Y(q.y)).join(" ")}" fill="none" stroke="var(--accent)" stroke-width="3"/>
-    <text x="${p}" y="14" font-size="12" fill="var(--mute)">${hi.toFixed(1)}</text><text x="${p}" y="${H-6}" font-size="12" fill="var(--mute)">${lo.toFixed(1)}</text></svg>`;
+    <text x="${p}" y="14" font-size="12" fill="var(--mute)">${fmtKg(hi)}</text><text x="${p}" y="${H-6}" font-size="12" fill="var(--mute)">${fmtKg(lo)}</text></svg>`;
 }
-document.querySelectorAll("[data-b]").forEach(b => b.onclick = () => { bw = Math.max(20, Math.round((bw + (b.dataset.b==="+" ? .1 : -.1))*10)/10); buzz(8); $("#bwOut").textContent = bw.toFixed(1)+" kg"; });
-$("#bwSave").onclick = () => {
+// Digits only, one decimal sign (either "." or "," typed, shown as DEC), max 3 + 1 digits
+$("#bwIn").addEventListener("input", e => {
+  let v = e.target.value.replace(/[.,]/g, DEC).replace(new RegExp(`[^0-9${DEC === "." ? "\\." : ","}]`, "g"), "");
+  const i = v.indexOf(DEC);
+  if (i >= 0) v = v.slice(0, i).slice(0, 3) + DEC + v.slice(i + 1).replaceAll(DEC, "").slice(0, 1);
+  else v = v.slice(0, 3);
+  e.target.value = v;
+  $("#kgField").classList.remove("bad");
+});
+function saveWeight(){
+  const inp = $("#bwIn"), raw = inp.value || "";
+  const kg = Math.round(parseFloat(raw.replace(",", ".")) * 10) / 10;
+  if (!(kg >= 20 && kg <= 400)) {
+    const f = $("#kgField"); f.classList.remove("bad"); void f.offsetWidth; f.classList.add("bad"); buzz([30,40,30]); inp.focus(); return;
+  }
   const k = dayKey(Date.now());
   db.body = db.body.filter(b => dayKey(b.date) !== k);
-  db.body.push({date:Date.now(), kg:bw}); save(); buzz(40); renderBody();
-};
+  db.body.push({date:Date.now(), kg}); save(); buzz(40);
+  inp.value = ""; inp.blur(); renderBody();
+}
+$("#bwSave").onclick = saveWeight;
+$("#bwIn").addEventListener("keydown", e => { if (e.key === "Enter") saveWeight(); });
 
 labelTabs(); renderToday();
 </script>
