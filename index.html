@@ -26,13 +26,6 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;touch-
 h1{font-size:28px;margin:0 0 2px}
 h3{margin:4px 0 10px}
 .sub{color:var(--mute);margin:0 0 16px}
-.week{display:flex;gap:6px;margin-bottom:20px}
-.day{flex:1;text-align:center;padding:8px 0;border-radius:12px;background:var(--card);font-size:12px;color:var(--mute);border:2px solid transparent}
-.day b{display:block;font-size:17px;color:var(--ink)}
-.day.train{border-color:var(--line)}
-.day.today{background:var(--accent);color:var(--on-accent)} .day.today b{color:var(--on-accent)}
-.day.done::after{content:"";display:block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin:4px auto 0}
-.day.today.done::after{background:var(--on-accent)}
 .card{display:flex;align-items:center;background:var(--card);border-radius:18px;padding:16px;margin-bottom:12px;gap:12px}
 .card .info{flex:1;min-width:0}
 .card .name{font-weight:700;font-size:18px}
@@ -78,17 +71,11 @@ nav.hide{display:none}
 .flash{animation:flash .35s}
 @keyframes flash{50%{background:var(--ok)}}
 /* progress */
-.ladder{background:var(--card);border-radius:18px;padding:6px}
-.lrow{display:flex;align-items:center;gap:8px;width:100%;min-height:52px;padding:0 10px;border-radius:12px;border:2px solid transparent;text-align:left}
-.lrow.sel{border-color:var(--accent);background:var(--bg)}
-.lrow:not(.sel) .segs i.on,.lrow:not(.sel) .segs i.cur{opacity:.45}
-.lrow.sel .lname{color:var(--accent)}
-.lrow .lname{width:96px;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lrow .segs{flex:1;display:grid;grid-template-columns:repeat(10,1fr);gap:3px}
-.lrow .segs i{height:14px;border-radius:3px;background:var(--line)}
-.lrow .segs i.on{background:var(--accent)}
-.lrow .segs i.cur{background:var(--accent);opacity:.5}
-.lrow .lnum{width:34px;text-align:right;font-size:13px;color:var(--mute)}
+.mvsw{display:flex;align-items:center;gap:8px;background:var(--card);border-radius:18px;padding:6px}
+.mvsw button{width:64px;height:64px;border-radius:14px;background:var(--bg);font-size:28px;font-weight:700;flex:none}
+.mvsw-c{flex:1;min-width:0;text-align:center}
+.mvsw-c b{display:block;font-size:20px}
+.mvsw-c small{display:block;color:var(--mute);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .chart{background:var(--card);border-radius:18px;padding:12px;margin-bottom:12px}
 .chart svg{width:100%;height:auto;display:block}
 .empty{color:var(--mute);text-align:center;padding:30px 0}
@@ -114,7 +101,6 @@ nav.hide{display:none}
 .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 /* home */
 #s-home .top{display:flex;flex-direction:column;overflow:hidden;padding-bottom:4px}
-#s-home h1{flex:none;margin-bottom:10px}
 #s-home .bottom{padding-top:8px}
 .cal{flex:1;min-height:0;display:flex;flex-direction:column;background:var(--card);border-radius:18px;padding:10px 10px 8px}
 .calhead{flex:none;display:flex;align-items:center;justify-content:space-between;margin:0 2px 6px}
@@ -145,7 +131,7 @@ nav.hide{display:none}
 .bar .segs i{height:14px;border-radius:4px;border:1.5px solid var(--accent)}
 .bar .segs i.on{background:var(--accent)}
 .bar small{width:34px;flex:none;text-align:right;font-size:13px;color:var(--mute);font-weight:600}
-@media (max-height:720px){ .bar{height:28px} .bar .segs i{height:12px} #s-home h1{font-size:24px;margin-bottom:6px} #s-home .top{padding-top:12px} .calhead button{width:32px;height:32px} }
+@media (max-height:720px){ .bar{height:28px} .bar .segs i{height:12px} #s-home .top{padding-top:12px} .calhead button{width:32px;height:32px} }
 @media (max-height:600px){ .bar{height:24px} .bar .segs i{height:10px} .legend{display:none} }
 /* sheet */
 .sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-end;z-index:9}
@@ -160,7 +146,6 @@ nav.hide{display:none}
 <div id="app">
   <section class="screen on" id="s-home">
     <div class="top">
-      <h1 id="homeTitle"></h1>
       <div class="cal" id="cal"></div>
     </div>
     <div class="bottom">
@@ -172,7 +157,6 @@ nav.hide{display:none}
     <div class="top">
       <h1 id="todayTitle"></h1>
       <p class="sub" id="todaySub"></p>
-      <div class="week" id="week"></div>
       <div id="todayList"></div>
     </div>
     <div class="bottom row-end" id="todayBtns"></div>
@@ -192,11 +176,9 @@ nav.hide{display:none}
 
   <section class="screen" id="s-progress">
     <div class="top">
-      <h1 id="pgTitle"></h1>
-      <p class="sub" id="pgSub"></p>
       <div class="chart" id="pgChart"></div>
     </div>
-    <div class="bottom"><div class="ladder" id="ladder"></div></div>
+    <div class="bottom"><div class="mvsw"><button id="pgPrev" aria-label="‹">‹</button><div class="mvsw-c"><b id="pgName"></b><small id="pgStep"></small></div><button id="pgNext" aria-label="›">›</button></div></div>
   </section>
 
   <section class="screen" id="s-program">
@@ -305,7 +287,7 @@ const PROGRAMS = {
 /* ============ i18n ============ */
 const T = {
  hu: {
-  tabs:["Főoldal","Fejlődés","Edzés","Profil"], calendar:"Naptár", bodyWeight:"Testsúly", legDone:"Edzettél", legMiss:"Kimaradt", legPlan:"Tervezett",
+  tabs:["Főoldal","Fejlődés","Edzés","Profil"], bodyWeight:"Testsúly", legDone:"Edzettél", legMiss:"Kimaradt", legPlan:"Tervezett",
   mv:{push:"Fekvőtámasz",squat:"Guggolás",pull:"Húzódzkodás",leg:"Lábemelés",bridge:"Híd",hspu:"Kézenállás"},
   mvLong:{hspu:"Fekvőtámasz kézenállásban"},
   prog:{fresh:"Friss hús",good:"Jó magaviselet",veteran:"Veterán",solitary:"Magánzárka",supermax:"Supermax"},
@@ -324,14 +306,14 @@ const T = {
   endQ:"Befejezed az edzést?", saveEnd:"Mentés és befejezés", discard:"Elvetés", keep:"Folytatom",
   levelUp:(n)=>`Haladó szint teljesítve! Jöhet a ${n}. lépés?`, goUp:"Igen, továbblépek", stay:"Még maradok",
   stepBack:"Nem lett meg a kezdő szint. A könyv szerint lépj vissza egyet, és tökéletesítsd a technikát.", goBack:"Visszalépek", master:"Mesterlépés teljesítve! 🏆",
-  noData:"Még nincs adat ezen a lépésen.", noWeights:"Még nincs mért testsúly.", progressSub:"Koppints egy gyakorlatra a grafikonhoz", chartFor:(m,n)=>`${m} – ${n}. lépés, legjobb sorozat`,
+  noData:"Még nincs adat ezen a lépésen.", bestSet:"Legjobb sorozat edzésenként", change:"Változás",
   program:"Program", yourSteps:"Jelenlegi lépések", language:"Nyelv", data:"Adatok", export:"Exportálás", import:"Importálás", reset:"Minden törlése", resetQ:"Biztosan törlöd az összes adatot?",
-  body:"Test", save:"Mentés", latest:"Utolsó", min:"Min", max:"Max", pickMv:"Melyik gyakorlat?",
+  body:"Test", save:"Mentés", min:"Min", max:"Max", pickMv:"Melyik gyakorlat?",
   setsPerMv:"Edző sorozatok", days:["V","H","K","Sze","Cs","P","Szo"], dayNames:["vasárnap","hétfő","kedd","szerda","csütörtök","péntek","szombat"],
   extras:"A könyv itt fogás-, vádli- és nyakgyakorlatokat is ad – ezeket az app nem követi."
  },
  en: {
-  tabs:["Home","Progress","Workout","Profile"], calendar:"Calendar", bodyWeight:"Body weight", legDone:"Trained", legMiss:"Missed", legPlan:"Planned",
+  tabs:["Home","Progress","Workout","Profile"], bodyWeight:"Body weight", legDone:"Trained", legMiss:"Missed", legPlan:"Planned",
   mv:{push:"Push-up",squat:"Squat",pull:"Pull-up",leg:"Leg raise",bridge:"Bridge",hspu:"Handstand"},
   mvLong:{hspu:"Handstand push-up"},
   prog:{fresh:"New Blood",good:"Good Behavior",veteran:"Veterano",solitary:"Solitary Confinement",supermax:"Supermax"},
@@ -350,9 +332,9 @@ const T = {
   endQ:"End workout?", saveEnd:"Save & finish", discard:"Discard", keep:"Keep going",
   levelUp:(n)=>`Progression standard hit! Move to step ${n}?`, goUp:"Yes, step up", stay:"Not yet",
   stepBack:"You missed the beginner standard. The book says step back one and perfect your form.", goBack:"Step back", master:"Master step complete! 🏆",
-  noData:"No data at this step yet.", noWeights:"No weigh-ins yet.", progressSub:"Tap a movement below to chart it", chartFor:(m,n)=>`${m} – step ${n}, best set`,
+  noData:"No data at this step yet.", bestSet:"Best set per workout", change:"Change",
   program:"Program", yourSteps:"Current steps", language:"Language", data:"Data", export:"Export", import:"Import", reset:"Erase everything", resetQ:"Erase all data?",
-  body:"Body", save:"Save", latest:"Latest", min:"Min", max:"Max", pickMv:"Which movement?",
+  body:"Body", save:"Save", min:"Min", max:"Max", pickMv:"Which movement?",
   setsPerMv:"Work sets", days:["Su","Mo","Tu","We","Th","Fr","Sa"], dayNames:["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
   extras:"The book adds grip, calf and neck work here – the app doesn't track those."
  }
@@ -419,12 +401,6 @@ function renderToday(){
   const now = new Date(), P = PROGRAMS[db.program], today = P.days[now.getDay()] || [];
   $("#todayTitle").textContent = t().dayNames[now.getDay()].replace(/^./, c => c.toUpperCase());
   $("#todaySub").textContent = `${t().prog[db.program]} · ${now.toLocaleDateString(db.lang,{day:"numeric",month:"long"})}`;
-  const done = new Set(db.sessions.map(s => dayKey(s.date)));
-  const mon = new Date(now); mon.setDate(now.getDate() - ((now.getDay()+6)%7));
-  $("#week").innerHTML = Array.from({length:7},(_,i)=>{
-    const d = new Date(mon); d.setDate(mon.getDate()+i);
-    return `<div class="day ${P.days[d.getDay()]?"train":""} ${dayKey(d)===dayKey(now)?"today":""} ${done.has(dayKey(d))?"done":""}">${t().days[d.getDay()]}<b>${d.getDate()}</b></div>`;
-  }).join("");
   let html = "";
   if (today.length) html = today.map(mvCard).join("");
   else {
@@ -592,17 +568,18 @@ $("#sheetBg").onclick = e => { if (e.target.id === "sheetBg") $("#sheetBg").clas
 /* ============ Progress ============ */
 let pgMv = "push";
 function renderProgress(){
-  $("#pgTitle").textContent = t().tabs[1];
-  $("#pgSub").textContent = t().progressSub;
-  $("#ladder").innerHTML = MV.map(m => {
-    const n = db.steps[m];
-    return `<button class="lrow ${m===pgMv?"sel":""}" data-m="${m}" aria-pressed="${m===pgMv}"><span class="lname">${esc(mvName(m))}</span><span class="segs">${Array.from({length:10},(_,i)=>`<i class="${i<n-1?"on":i===n-1?"cur":""}"></i>`).join("")}</span><span class="lnum">${n}/10</span></button>`;
-  }).join("");
-  document.querySelectorAll("#ladder .lrow").forEach(b => b.onclick = () => { if (pgMv === b.dataset.m) return; pgMv = b.dataset.m; buzz(8); renderProgress(); });
   const n = db.steps[pgMv], st = step(pgMv,n);
+  $("#pgName").textContent = mvName(pgMv,true);
+  $("#pgStep").textContent = `${t().stepOf(n)} · ${sName(pgMv,n)}`;
   const pts = history(pgMv,n).map(h => ({x:h.date, y:Math.max(...h.work)}));
-  $("#pgChart").innerHTML = `<div class="hint" style="margin:0 0 6px">${esc(t().chartFor(mvName(pgMv),n))}</div>` + chart(pts, st);
+  $("#pgChart").innerHTML = `<div class="hint" style="margin:0 0 6px">${t().bestSet}</div>` + chart(pts, st);
 }
+const pgGo = d => { pgMv = MV[(MV.indexOf(pgMv) + d + MV.length) % MV.length]; buzz(8); renderProgress(); };
+$("#pgPrev").onclick = () => pgGo(-1);
+$("#pgNext").onclick = () => pgGo(1);
+{ let x0 = null; const el = $("#s-progress");
+  el.addEventListener("touchstart", e => { x0 = e.touches[0].clientX; }, {passive:true});
+  el.addEventListener("touchend", e => { if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0; x0 = null; if (Math.abs(dx) > 60) pgGo(dx < 0 ? 1 : -1); }); }
 function chart(pts, st){
   if (!pts.length) return `<div class="empty">${t().noData}</div>`;
   const W_=360, H=200, p=30, goals = st.goals.map(g=>g[1]);
@@ -621,8 +598,8 @@ function chart(pts, st){
 /* ============ Program ============ */
 function renderProgram(){
   const P = PROGRAMS[db.program];
-  let h = `<h1>${t().tabs[3]}</h1><div class="section">${t().bodyWeight}</div><div class="stats" id="bwStats"></div><div class="chart" id="bwChart"></div>`;
-  h += `<div class="section">${t().program} · ${t().setsPerMv}: ${P.sets}</div>`;
+  let h = `<div class="stats" id="bwStats"></div><div class="chart" id="bwChart"></div>`;
+  h += `<div class="section" style="margin-top:4px">${t().program} · ${t().setsPerMv}: ${P.sets}</div>`;
   h += Object.keys(PROGRAMS).map(k => `<button class="opt-card ${k===db.program?"on":""}" data-p="${k}"><b>${t().prog[k]}</b><small>${t().progDesc[k]}</small></button>`).join("");
   if (db.program === "solitary") h += `<p class="hint">${t().extras}</p>`;
   h += `<div class="section">${t().yourSteps}</div>`;
@@ -665,11 +642,13 @@ $("#importFile").onchange = e => {
 const DEC = (1.5).toLocaleString(navigator.language || "en").replace(/\d/g, "")[0] || ".";
 const fmtKg = v => v.toFixed(1).replace(".", DEC);
 function renderWeightHistory(){
-  const last = db.body[db.body.length-1];
+  // Latest weight is already the input's placeholder, so history shows only what it adds
   const kgs = db.body.map(b=>b.kg), st = (l,v)=>`<div class="stat"><small>${l}</small><b>${v}</b></div>`;
-  $("#bwStats").innerHTML = last ? st(t().latest, fmtKg(last.kg)) + st(t().min, fmtKg(Math.min(...kgs))) + st(t().max, fmtKg(Math.max(...kgs))) : "";
   const pts = db.body.map(b=>({x:b.date,y:b.kg}));
-  if (pts.length < 2) { $("#bwChart").innerHTML = `<div class="empty">${pts.length ? fmtKg(last.kg)+" kg" : t().noWeights}</div>`; return; }
+  $("#bwStats").style.display = $("#bwChart").style.display = pts.length < 2 ? "none" : "";
+  if (pts.length < 2) return;
+  const diff = kgs[kgs.length-1] - kgs[0];
+  $("#bwStats").innerHTML = st(t().min, fmtKg(Math.min(...kgs))) + st(t().max, fmtKg(Math.max(...kgs))) + st(t().change, (diff > 0 ? "+" : diff < 0 ? "−" : "") + fmtKg(Math.abs(diff)));
   const W_=360,H=180,p=28, ys=pts.map(q=>q.y), lo=Math.min(...ys)-1, hi=Math.max(...ys)+1;
   const X=i=>p+(W_-2*p)*i/(pts.length-1), Y=v=>H-p-(H-2*p)*(v-lo)/(hi-lo);
   $("#bwChart").innerHTML = `<svg viewBox="0 0 ${W_} ${H}"><path d="${pts.map((q,i)=>(i?"L":"M")+X(i)+" "+Y(q.y)).join(" ")}" fill="none" stroke="var(--accent)" stroke-width="3"/>
@@ -701,7 +680,6 @@ $("#bwSave").onclick = e => { e.preventDefault(); saveWeight(); };
 /* ============ Home ============ */
 let calOff = 0; // months from the current one
 function renderHome(){
-  $("#homeTitle").textContent = t().calendar;
   const now = new Date(), P = PROGRAMS[db.program];
   const first = new Date(now.getFullYear(), now.getMonth() + calOff, 1);
   const days = new Date(first.getFullYear(), first.getMonth()+1, 0).getDate();
