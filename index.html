@@ -27,7 +27,20 @@ h1{font-size:28px;margin:0 0 2px}
 h3{margin:4px 0 10px}
 .sub{color:var(--mute);margin:0 0 16px}
 .card{display:flex;align-items:center;background:var(--card);border-radius:18px;padding:16px;margin-bottom:12px;gap:12px}
-.card .info{flex:1;min-width:0}
+.card .info{flex:1;min-width:0;cursor:pointer}
+.guide{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:16px;padding:8px 12px 8px 6px;margin-bottom:12px}
+.guide svg{width:132px;height:106px;flex:none}
+.guide p{margin:0;font-size:14px;line-height:1.35}
+.guide small{display:block;margin-top:6px;color:var(--mute);font-size:12px}
+.guide.lg{flex-direction:column;align-items:stretch;padding:12px;background:var(--bg)}
+.guide.lg svg{width:100%;height:auto;max-height:240px}
+.gf{fill:none;stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.gf.far{opacity:.35}
+.gh{fill:var(--card);stroke:var(--ink);stroke-width:2.4}
+.guide.lg .gh{fill:var(--bg)}
+.gp{stroke:var(--mute);stroke-width:1.2}
+.gb{fill:none;stroke:var(--accent);stroke-width:1.4}
+.gt{stroke:var(--accent);stroke-width:2;stroke-dasharray:2 1.5}
 .card .name{font-weight:700;font-size:18px}
 .card .meta{color:var(--mute);font-size:14px}
 .rest{background:var(--card);border-radius:18px;padding:20px;margin-bottom:12px}
@@ -318,7 +331,7 @@ const T = {
   reps:"ismétlés", secs:"mp", eachSide:"oldalanként",
   warm:"Bemelegítés", work:"Edző sorozat", doneWarm:"Bemelegítés kész", logSet:(n)=>`${n}. sorozat kész`,
   skip:"Kihagy", addSet:"+ sorozat", end:"Vége", nextMv:(m)=>`Tovább: ${m}`, finish:"Edzés vége ✓",
-  tempo:"Tempó: 2 mp le · 1 mp szünet · 2 mp fel", last:"Legutóbb", goal:"Cél", restT:"Pihenő",
+  tempo:"Tempó: 2 mp le · 1 mp szünet · 2 mp fel", hold:"Tartás – ne mozdulj.", startMv:"Indítás", last:"Legutóbb", goal:"Cél", restT:"Pihenő",
   endQ:"Befejezed az edzést?", saveEnd:"Mentés és befejezés", discard:"Elvetés", keep:"Folytatom",
   levelUp:(n)=>`Haladó szint teljesítve! Jöhet a ${n}. lépés?`, goUp:"Igen, továbblépek", stay:"Még maradok",
   stepBack:"Nem lett meg a kezdő szint. A könyv szerint lépj vissza egyet, és tökéletesítsd a technikát.", goBack:"Visszalépek", master:"Mesterlépés teljesítve! 🏆",
@@ -350,7 +363,7 @@ const T = {
   reps:"reps", secs:"sec", eachSide:"each side",
   warm:"Warm-up", work:"Work set", doneWarm:"Warm-up done", logSet:(n)=>`Log set ${n}`,
   skip:"Skip", addSet:"+ set", end:"End", nextMv:(m)=>`Next: ${m}`, finish:"Finish ✓",
-  tempo:"Tempo: 2 s down · 1 s pause · 2 s up", last:"Last time", goal:"Goal", restT:"Rest",
+  tempo:"Tempo: 2 s down · 1 s pause · 2 s up", hold:"Static hold – stay still.", startMv:"Start", last:"Last time", goal:"Goal", restT:"Rest",
   endQ:"End workout?", saveEnd:"Save & finish", discard:"Discard", keep:"Keep going",
   levelUp:(n)=>`Progression standard hit! Move to step ${n}?`, goUp:"Yes, step up", stay:"Not yet",
   stepBack:"You missed the beginner standard. The book says step back one and perfect your form.", goBack:"Step back", master:"Master step complete! 🏆",
@@ -361,6 +374,232 @@ const T = {
   extras:"The book adds grip, calf and neck work here – the app doesn't track those."
  }
 };
+
+/* ============ Stick-figure guides ============
+   Side view, facing right. Each step has a start pose (a) and end pose (b); the
+   figure loops a → b → a on the book's 2-1-2 tempo. Static holds have no b.
+   A pose gives neck N, pelvis P, hand W, foot F (+ far-side W2/F2, head H);
+   elbows and knees are solved with two-bone IK. eb/kb = bend side (±1). */
+const GL = {torso:24, ua:12, fa:11, th:15, sh:14, head:6};
+const pl = (F, deg, extra={}) => { // straight body line from the feet (plank / lean)
+  const r = deg*Math.PI/180, c = Math.cos(r), s = Math.sin(r);
+  return Object.assign({F, P:[F[0]+29*c, F[1]+29*s], N:[F[0]+53*c, F[1]+53*s]}, extra);
+};
+const kp = (K, deg, extra={}) => { // straight line from the knees (kneeling)
+  const r = deg*Math.PI/180, c = Math.cos(r), s = Math.sin(r);
+  return Object.assign({P:[K[0]+15*c, K[1]+15*s], N:[K[0]+39*c, K[1]+39*s]}, extra);
+};
+const HANG = (y, extra={}) => Object.assign({W:[50,-4], N:[50,y], P:[50,y+24], F:[38,y+44], kb:1}, extra);
+const LIE = {N:[28,63], P:[52,63], W:[50,66], eb:-1};
+const GUIDES = {
+ push: [
+  {a:{N:[60,15],P:[52,38],W:[85,18],F:[47,66]}, b:{N:[70,19],P:[56,38],W:[85,21],F:[48,66]}, props:[["wall",86]],
+   en:"Hands on the wall at chest height, body straight. Bend until your forehead touches the wall.", hu:"Kéz a falon mellmagasságban, test egyenes. Hajlíts, amíg a homlokod a falhoz ér."},
+  {a:pl([30,66],-50,{W:[72,46]}), b:pl([30,66],-36,{W:[72,46]}), props:[["box",64,90,46]],
+   en:"Hands on a table or ledge, body in one line. Lower your chest to the edge.", hu:"Kéz asztalon vagy párkányon, test egy vonalban. Engedd a mellkasod a széléig."},
+  {a:kp([40,66],-35,{W:[72,66],F:[27,64],kb:-1}), b:kp([40,66],-12,{W:[72,66],F:[27,64],kb:-1}),
+   en:"On your knees, hands under shoulders, hips straight. Lower until your chest nearly touches the floor.", hu:"Térdelve, kéz a váll alatt, csípő egyenes. Engedd le, amíg a mellkasod majdnem a földhöz ér."},
+  {a:pl([22,64],-24,{W:[71,66]}), b:pl([22,64],-14,{W:[71,66]}),
+   en:"Full plank on your toes. Lower only halfway, elbows at 90°, then press up.", hu:"Teljes tartás lábujjhegyen. Csak félig engedd le, könyök 90°, majd told fel."},
+  {a:pl([22,64],-24,{W:[71,66]}), b:pl([22,64],-6,{W:[71,66]}),
+   en:"Body rigid from heels to head. Lower until your chest is a fist from the floor.", hu:"Test feszes saroktól fejig. Engedd le, amíg a mellkasod egy ökölnyire van a földtől."},
+  {a:pl([22,64],-24,{W:[71,66]}), b:pl([22,64],-6,{W:[71,66]}),
+   en:"Hands together under your chest, index fingers touching. Full range, elbows close.", hu:"Kezek összeérnek a mellkas alatt. Teljes mozgástartomány, könyök közel."},
+  {a:pl([22,64],-24,{W:[62,66],W2:[78,54]}), b:pl([22,64],-8,{W:[62,66],W2:[78,54]}), props:[["ball",78,60,6]],
+   en:"One hand on the floor, the other on a basketball. Go all the way down; switch sides.", hu:"Egyik kéz a földön, a másik kosárlabdán. Menj le teljesen; cserélj oldalt."},
+  {a:pl([22,64],-24,{W:[71,66],W2:[50,48],eb2:-1}), b:pl([22,64],-14,{W:[71,66],W2:[50,48],eb2:-1}),
+   en:"Feet wide, one hand under the chest, the other behind your back. Lower halfway.", hu:"Láb terpeszben, egyik kéz a mellkas alatt, a másik a hátadon. Félig engedd le."},
+  {a:pl([22,64],-24,{W:[68,66],W2:[93,60]}), b:pl([22,64],-8,{W:[68,66],W2:[93,60]}), props:[["ball",93,61,5]],
+   en:"One hand under the chest, the other arm straight out on a ball. The bent arm does the work.", hu:"Egyik kéz a mellkas alatt, a másik kar nyújtva egy labdán. A hajlított kar dolgozik."},
+  {a:pl([22,64],-24,{W:[71,66],W2:[50,48],eb2:-1}), b:pl([22,64],-6,{W:[71,66],W2:[50,48],eb2:-1}),
+   en:"Feet wide, one arm behind your back. Lower all the way, hips square to the floor.", hu:"Láb terpeszben, egyik kar a hátadon. Menj le teljesen, csípő párhuzamos a földdel."}],
+ squat: [
+  {a:{N:[40,62],P:[44,40],H:[34,64],W:[48,48],F:[47,12],eb:-1}, b:{N:[40,62],P:[44,40],H:[34,64],W:[48,48],F:[26,42],kb:1,eb:-1},
+   en:"On your shoulders, hands on your lower back, legs up. Bend until your knees touch your forehead.", hu:"Tarkón állva, kéz a derékon, láb fent. Hajlíts, amíg a térded a homlokodhoz ér."},
+  {a:{N:[70,30],P:[48,38],W:[74,44],F:[46,66]}, b:{N:[60,44],P:[40,56],W:[74,44],F:[46,66]}, props:[["box",68,92,44]],
+   en:"Bent at the hips, hands on a chair. Squat until your hamstrings touch your calves.", hu:"Csípőből hajolva, kéz egy széken. Guggolj, amíg a combod hátsó része a vádlidhoz ér."},
+  {a:{N:[49,13],P:[48,37],W:[72,28],F:[48,66]}, b:{N:[52,36],P:[40,58],W:[72,40],F:[48,66]}, props:[["pole",73]],
+   en:"Hold a sturdy pole or table in front. Squat all the way down, using your arms a little.", hu:"Kapaszkodj egy stabil oszlopba vagy asztalba. Guggolj le teljesen, kicsit segíts a karral."},
+  {a:{N:[49,13],P:[48,37],W:[72,24],F:[48,66]}, b:{N:[54,26],P:[40,47],W:[74,28],F:[48,66]},
+   en:"Feet shoulder-width, arms forward. Squat until your thighs are at 45°, then stand.", hu:"Láb vállszélességben, kar előre. Guggolj, amíg a combod 45°-os, majd állj fel."},
+  {a:{N:[49,13],P:[48,37],W:[72,24],F:[48,66]}, b:{N:[52,37],P:[38,58],W:[74,38],F:[48,66]},
+   en:"Heels down, back straight. Go down until your hamstrings touch your calves.", hu:"Sarok lent, hát egyenes. Menj le, amíg a combod hátsó része a vádlidhoz ér."},
+  {a:{N:[49,13],P:[48,37],W:[72,24],F:[48,66]}, b:{N:[52,37],P:[38,58],W:[74,38],F:[48,66]},
+   en:"Feet together, heels down. Full depth with arms forward for balance.", hu:"Lábak összezárva, sarok lent. Teljes mélység, kar előre az egyensúlyért."},
+  {a:{N:[48,13],P:[46,37],W:[72,24],F:[44,66],F2:[64,55],kb2:-1}, b:{N:[50,37],P:[36,58],W:[74,38],F:[44,66],F2:[64,55],kb2:-1}, props:[["ball",64,60,6]],
+   en:"One foot flat, the other on a basketball in front. Squat on the flat foot; switch sides.", hu:"Egyik talp a földön, a másik láb egy kosárlabdán elöl. A talpon álló lábbal guggolj; cserélj."},
+  {a:{N:[48,13],P:[46,37],W:[72,24],F:[46,66],F2:[70,52]}, b:{N:[52,26],P:[40,47],W:[74,28],F:[46,66],F2:[68,46]},
+   en:"Stand on one leg, the other straight in front. Squat halfway, keeping the heel down.", hu:"Állj egy lábon, a másik nyújtva előre. Guggolj félig, sarok lent."},
+  {a:{N:[48,13],P:[46,37],W:[72,24],W2:[28,60],F:[46,66],F2:[70,52],eb2:-1}, b:{N:[50,37],P:[36,58],W:[74,38],W2:[24,60],F:[46,66],F2:[66,58],eb2:-1}, props:[["ball",24,61,5]],
+   en:"One-leg squat with one hand on a ball beside you for help at the bottom.", hu:"Egylábas guggolás, egyik kéz egy labdán melletted, hogy alul segítsen."},
+  {a:{N:[48,13],P:[46,37],W:[72,24],F:[46,66],F2:[70,52]}, b:{N:[50,37],P:[36,58],W:[74,38],F:[46,66],F2:[64,58]},
+   en:"All the way down on one leg, the other straight out. No bouncing at the bottom.", hu:"Teljesen le egy lábon, a másik nyújtva. Alul ne rugózz."}],
+ pull: [
+  {a:pl([66,66],-105,{W:[76,20],eb:-1}), b:pl([66,66],-92,{W:[76,20],eb:1}), props:[["pole",76]],
+   en:"Hold a door frame or pole, lean back with a straight body. Pull your chest to it.", hu:"Fogj meg egy ajtókeretet vagy oszlopot, dőlj hátra egyenes testtel. Húzd hozzá a mellkasod."},
+  {a:pl([20,66],-10,{W:[72,34],eb:-1}), b:pl([20,66],-27,{W:[70,34],eb:1}), props:[["bar",71,34]],
+   en:"Under a sturdy table or low bar, heels on the floor. Pull your chest up to it.", hu:"Stabil asztal vagy alacsony rúd alatt, sarok a földön. Húzd fel a mellkasod hozzá."},
+  {a:{W:[50,-4],N:[50,18],P:[50,42],F:[78,46],kb:-1}, b:{W:[50,-4],N:[50,3],P:[50,27],F:[76,44],kb:-1}, props:[["bar",50,-4],["box",68,92,46]],
+   en:"Hang from the bar with your heels on a chair in front. Pull until your chin clears the bar.", hu:"Lógj a rúdon, sarok egy széken elöl. Húzd fel magad, amíg az állad a rúd fölé ér."},
+  {a:HANG(7), b:HANG(-2), props:[["bar",50,-4]],
+   en:"Start with elbows at 90°. Pull up until your chin is over the bar.", hu:"Könyök 90°-ban. Húzd fel magad, amíg az állad a rúd fölé ér."},
+  {a:HANG(18), b:HANG(-2), props:[["bar",50,-4]],
+   en:"Dead hang, shoulder-width grip. Pull up smoothly, chin over the bar, no swinging.", hu:"Teljes lógás, vállszéles fogás. Húzd fel magad lendület nélkül, áll a rúd fölé."},
+  {a:HANG(18), b:HANG(-2), props:[["bar",50,-4]],
+   en:"Hands touching on the bar. Full range, chin over the bar.", hu:"Kezek összeérnek a rúdon. Teljes mozgás, áll a rúd fölé."},
+  {a:HANG(18,{W2:[50,8]}), b:HANG(-2,{W2:[54,0]}), props:[["bar",50,-4]],
+   en:"One hand on the bar, the other gripping its wrist lower down. Switch sides.", hu:"Egyik kéz a rúdon, a másik lejjebb a csuklóját fogja. Cserélj oldalt."},
+  {a:HANG(7,{W2:[46,40],eb2:-1}), b:HANG(-2,{W2:[46,30],eb2:-1}), props:[["bar",50,-4]],
+   en:"One arm only, from bent elbow up to chin over the bar.", hu:"Csak egy kézzel, hajlított könyöktől fel, áll a rúd fölé."},
+  {a:HANG(18,{W2:[58,20]}), b:HANG(-2,{W2:[58,12]}), props:[["bar",50,-4],["towel",56,-4,58,24]],
+   en:"One hand on the bar, the other on a towel hanging from it. Pull with the bar arm.", hu:"Egyik kéz a rúdon, a másik a rúdról lógó törülközőn. A rúdon lévő kar húz."},
+  {a:HANG(18,{W2:[46,44],eb2:-1}), b:HANG(-2,{W2:[46,24],eb2:-1}), props:[["bar",50,-4]],
+   en:"One arm, dead hang to chin over the bar, no kicking.", hu:"Egy kézzel, teljes lógásból áll a rúd fölé, rúgás nélkül."}],
+ leg: [
+  {a:{N:[33,41],P:[44,62],W:[30,64],F:[72,58],eb:1,kb:1}, b:{N:[33,41],P:[44,62],W:[30,64],F:[54,54],kb:-1,eb:1},
+   en:"Sit, lean back on your hands, legs out. Pull your knees to your chest.", hu:"Ülj, dőlj hátra a kezedre, láb előre. Húzd a térded a mellkasodhoz."},
+  {a:Object.assign({},LIE,{F:[74,66],kb:-1}), b:Object.assign({},LIE,{F:[62,46],kb:-1}),
+   en:"Lie on your back, knees bent. Lift your knees to your chest, lower slowly.", hu:"Feküdj hanyatt, térd hajlítva. Emeld a térded a mellkasodhoz, lassan engedd vissza."},
+  {a:Object.assign({},LIE,{F:[80,62],kb:-1}), b:Object.assign({},LIE,{F:[70,38],kb:-1}),
+   en:"On your back, knees slightly bent. Raise your legs to vertical, lower until feet nearly touch the floor.", hu:"Hanyatt, térd kissé hajlítva. Emeld függőlegesig, engedd le, amíg a lábad majdnem leér."},
+  {a:Object.assign({},LIE,{F:[81,62],kb:-1}), b:Object.assign({},LIE,{F:[62,42],kb:-1}),
+   en:"Legs straight to start; bend the knees as you lift them to your chest, straighten on the way down.", hu:"Nyújtott lábbal indulj; emeléskor hajlítsd a térded a mellkashoz, lefelé nyújtsd ki."},
+  {a:Object.assign({},LIE,{F:[81,62]}), b:Object.assign({},LIE,{F:[54,34]}),
+   en:"Legs straight and together. Raise them to vertical, lower without touching the floor.", hu:"Láb nyújtva, zárva. Emeld függőlegesig, engedd le, de ne érjen le."},
+  {a:HANG(18,{F:[51,70],kb:-1}), b:HANG(18,{F:[60,58],kb:-1}), props:[["bar",50,-4],["nofloor"]],
+   en:"Hang from the bar. Raise your knees to your chest without swinging.", hu:"Lógj a rúdon. Emeld a térded a mellkasodhoz lendület nélkül."},
+  {a:HANG(18,{F:[53,70],kb:-1}), b:HANG(18,{F:[66,56],kb:-1}), props:[["bar",50,-4],["nofloor"]],
+   en:"Hang, knees slightly bent. Raise your thighs to horizontal or higher.", hu:"Lógj, térd kissé hajlítva. Emeld a combod vízszintesig vagy feljebb."},
+  {a:HANG(18,{F:[51,71],kb:-1}), b:HANG(18,{F:[58,44],kb:-1}), props:[["bar",50,-4],["nofloor"]],
+   en:"Start straight; bend your knees up to your chest, straighten as you lower.", hu:"Nyújtva indulj; húzd a térded a mellkasodhoz, lefelé nyújtsd ki."},
+  {a:HANG(18,{F:[51,71]}), b:HANG(18,{F:[79,44]}), props:[["bar",50,-4],["nofloor"]],
+   en:"Hang with straight legs. Raise them to horizontal, keep the knees locked.", hu:"Lógj nyújtott lábbal. Emeld vízszintesig, térd zárva."},
+  {a:HANG(18,{F:[51,71]}), b:HANG(18,{F:[65,15]}), props:[["bar",50,-4],["nofloor"]],
+   en:"Straight legs all the way up to the bar, then lower under control.", hu:"Nyújtott láb egészen a rúdig, majd kontrolláltan le."}],
+ bridge: [
+  {a:Object.assign({},LIE,{F:[72,66],kb:-1}), b:{N:[28,62],P:[52,46],W:[48,66],F:[72,66],kb:-1,eb:-1},
+   en:"Lie on your back, knees bent, feet flat. Push your hips up into a straight line.", hu:"Feküdj hanyatt, térd hajlítva, talp a földön. Told fel a csípőd egy vonalba."},
+  {a:{N:[38,39],P:[44,62],W:[30,64],F:[78,66],eb:1}, b:{N:[30,44],P:[52,51],W:[30,66],F:[78,66],eb:1},
+   en:"Sit with legs straight, hands behind. Push up until your body is a straight plank.", hu:"Ülj nyújtott lábbal, kéz hátul. Told fel magad, amíg a tested egyenes."},
+  {a:{N:[30,40],P:[44,60],W:[22,46],F:[70,66],kb:-1,eb:1}, b:{N:[28,46],P:[46,44],W:[22,46],F:[70,66],kb:-1,eb:1,H:[22,48]}, props:[["box",4,26,46]],
+   en:"Hands on a bed or bench behind you, feet on the floor. Push your hips up into an arch.", hu:"Kéz egy ágyon vagy padon mögötted, talp a földön. Told fel a csípőd ívbe."},
+  {a:{N:[30,58],P:[50,58],H:[24,64],W:[26,64],F:[70,66],kb:-1,eb:1}, b:{N:[32,54],P:[50,40],H:[26,63],W:[26,64],F:[70,66],kb:-1,eb:1},
+   en:"Head and feet on the floor, hands by your head. Lift your hips high, gently roll onto your head.", hu:"Fej és talp a földön, kéz a fej mellett. Emeld magasra a csípőd, finoman gördülj a fejre."},
+  {a:{N:[30,54],P:[50,58],W:[22,66],F:[70,66],kb:-1,eb:1}, b:{N:[30,42],P:[50,40],W:[22,66],F:[70,66],kb:-1,eb:1,H:[25,46]}, props:[["ball",40,60,6]],
+   en:"Lying over a ball, hands by your head. Push up to straight arms, the ball under your back as a guide.", hu:"Egy labdán fekve, kéz a fej mellett. Told fel nyújtott karig, a labda vezet."},
+  {a:{N:[28,63],P:[50,63],W:[24,66],F:[72,66],kb:-1,eb:-1}, b:{N:[30,46],P:[50,34],W:[22,66],F:[74,66],kb:-1,eb:1,H:[26,52]},
+   en:"Hands by your head, feet flat. Push into a full arch with straight arms.", hu:"Kéz a fej mellett, talp a földön. Told fel teljes ívbe nyújtott karral."},
+  {a:{N:[36,14],P:[40,37],W:[12,10],F:[40,66],eb:-1}, b:{N:[28,44],P:[46,42],W:[10,58],F:[44,66],eb:1,H:[23,49]}, props:[["wall",10]],
+   en:"Back to the wall, arms overhead. Walk your hands down the wall into a bridge.", hu:"Háttal a falnak, kar a fej fölött. Kezeddel sétálj le a falon hídba."},
+  {a:{N:[28,44],P:[46,42],W:[10,58],F:[44,66],eb:1,H:[23,49]}, b:{N:[36,14],P:[40,37],W:[12,10],F:[40,66],eb:-1}, props:[["wall",10]],
+   en:"From the bridge, walk your hands back up the wall to standing.", hu:"A hídból sétálj vissza a kezeddel a falon állásba."},
+  {a:{N:[52,14],P:[56,37],W:[44,-7],F:[58,66],eb:-1}, b:{N:[38,46],P:[56,36],W:[30,66],F:[62,66],eb:1,H:[33,52]},
+   en:"From standing, arms overhead, lean back and lower slowly into a full bridge.", hu:"Állásból, kar a fej fölött, dőlj hátra és lassan ereszkedj teljes hídba."},
+  {a:{N:[52,14],P:[56,37],W:[44,-7],F:[58,66],eb:-1}, b:{N:[38,46],P:[56,36],W:[30,66],F:[62,66],eb:1,H:[33,52]},
+   en:"Lower into a bridge from standing, then rock forward and stand back up.", hu:"Állásból ereszkedj hídba, majd lendülj előre és állj vissza."}],
+ hspu: [
+  {a:{N:[66,57],P:[68,33],H:[66,63],W:[58,66],F:[75,5],eb:1}, props:[["wall",78]],
+   en:"Head and hands in a triangle on the floor, legs up against the wall. Hold.", hu:"Fej és kezek háromszögben a földön, láb a falon. Tartsd."},
+  {a:{N:[64,50],P:[46,40],W:[62,66],F:[44,56],kb:-1,eb:1,H:[70,52]},
+   en:"Squat, hands on the floor, knees on your elbows. Lean forward until your feet lift. Hold.", hu:"Guggolj, kéz a földön, térd a könyökön. Dőlj előre, amíg a lábad felemelkedik. Tartsd."},
+  {a:{N:[66,44],P:[68,20],W:[66,66],F:[76,-8]}, props:[["wall",78]],
+   en:"Kick up into a handstand, heels on the wall, arms locked. Hold.", hu:"Rúgd fel magad kézenállásba, sarok a falon, kar nyújtva. Tartsd."},
+  {a:{N:[66,44],P:[68,20],W:[66,66],F:[76,-8],eb:-1}, b:{N:[66,55],P:[68,31],W:[66,66],F:[76,3],eb:-1}, props:[["wall",78]],
+   en:"Handstand against the wall. Lower halfway, elbows to 90°, press back up.", hu:"Kézenállás a falnál. Engedd le félig, könyök 90°, told vissza."},
+  {a:{N:[66,44],P:[68,20],W:[66,66],F:[76,-8],eb:-1}, b:{N:[66,58],P:[68,34],W:[66,66],F:[76,6],eb:-1}, props:[["wall",78]],
+   en:"Lower until your head lightly touches the floor, then press up to locked arms.", hu:"Engedd le, amíg a fejed finoman leér, majd told fel nyújtott karig."},
+  {a:{N:[66,44],P:[68,20],W:[66,66],F:[76,-8],eb:-1}, b:{N:[66,58],P:[68,34],W:[66,66],F:[76,6],eb:-1}, props:[["wall",78]],
+   en:"Hands close together. Full range, head to the floor.", hu:"Kezek közel egymáshoz. Teljes mozgás, fej a földig."},
+  {a:{N:[66,44],P:[68,20],W:[68,66],W2:[54,54],F:[76,-8],eb:-1}, b:{N:[64,56],P:[68,32],W:[68,66],W2:[54,54],F:[76,4],eb:-1}, props:[["wall",78],["ball",54,60,6]],
+   en:"One hand on the floor, the other on a basketball. Lower and press; switch sides.", hu:"Egyik kéz a földön, a másik kosárlabdán. Engedd le és told fel; cserélj."},
+  {a:{N:[66,44],P:[68,20],W:[66,66],F:[76,-8],eb:-1}, b:{N:[66,55],P:[68,31],W:[66,66],F:[76,3],eb:-1}, props:[["wall",78]],
+   en:"One arm only, the other hand lightly balancing. Lower halfway.", hu:"Csak egy kézzel, a másik kéz csak egyensúlyoz. Engedd le félig."},
+  {a:{N:[66,44],P:[68,20],W:[68,66],W2:[44,62],F:[76,-8],eb:-1}, b:{N:[64,56],P:[68,32],W:[68,66],W2:[44,62],F:[76,4],eb:-1}, props:[["wall",78],["ball",44,63,4]],
+   en:"One arm under you, the other straight out to the side on a ball.", hu:"Egyik kar alattad, a másik nyújtva oldalra egy labdán."},
+  {a:{N:[66,44],P:[68,20],W:[66,66],F:[76,-8],eb:-1}, b:{N:[66,58],P:[68,34],W:[66,66],F:[76,6],eb:-1}, props:[["wall",78]],
+   en:"One-arm handstand against the wall. Full range, head to the floor.", hu:"Egykezes kézenállás a falnál. Teljes mozgás, fej a földig."}]
+};
+
+const lerp = (a, b, t) => a + (b - a) * t;
+function ik(R, X, l1, l2, side){
+  const dx = X[0]-R[0], dy = X[1]-R[1], d = Math.hypot(dx, dy) || 0.001, base = Math.atan2(dy, dx);
+  if (d >= l1 + l2) return [R[0] + l1*dx/d, R[1] + l1*dy/d];
+  const a = Math.acos(Math.max(-1, Math.min(1, (l1*l1 + d*d - l2*l2) / (2*l1*d))));
+  const ang = base + side*a;
+  return [R[0] + l1*Math.cos(ang), R[1] + l1*Math.sin(ang)];
+}
+function poseAt(g, t){ // t: 0 = a, 1 = b
+  const A = g.a, B = g.b || g.a, out = {};
+  for (const k of ["N","P","W","F","H","W2","F2"]) {
+    const pa = A[k], pb = B[k] || pa; if (!pa) continue;
+    out[k] = [lerp(pa[0], pb[0], t), lerp(pa[1], pb[1], t)];
+  }
+  for (const k of ["eb","kb","eb2","kb2"]) out[k] = (t < .5 ? A[k] : (B[k] ?? A[k]));
+  return out;
+}
+function figureSVG(g, t){
+  const p = poseAt(g, t), L = GL, f = n => n.toFixed(1);
+  const dx = p.N[0]-p.P[0], dy = p.N[1]-p.P[1], d = Math.hypot(dx, dy) || 1;
+  const H = p.H || [p.N[0] + L.head*dx/d, p.N[1] + L.head*dy/d];
+  const E = ik(p.N, p.W, L.ua, L.fa, p.eb ?? 1), K = ik(p.P, p.F, L.th, L.sh, p.kb ?? -1);
+  const line = (pts, cls) => `<polyline class="${cls}" points="${pts.map(q => f(q[0])+","+f(q[1])).join(" ")}"/>`;
+  let far = "";
+  if (p.W2) far += line([p.N, ik(p.N, p.W2, L.ua, L.fa, p.eb2 ?? 1), p.W2], "gf far");
+  if (p.F2) far += line([p.P, ik(p.P, p.F2, L.th, L.sh, p.kb2 ?? -1), p.F2], "gf far");
+  return far + line([p.P, p.N], "gf") + line([p.N, E, p.W], "gf") + line([p.P, K, p.F], "gf") +
+    `<circle class="gh" cx="${f(H[0])}" cy="${f(H[1])}" r="4"/>`;
+}
+function guideBox(g){ // tight viewBox around both poses and the props
+  const xs = [], ys = [], add = q => { xs.push(q[0]); ys.push(q[1]); };
+  for (const t of [0, .5, 1]) {
+    const p = poseAt(g, t), dx = p.N[0]-p.P[0], dy = p.N[1]-p.P[1], d = Math.hypot(dx, dy) || 1;
+    [p.N, p.P, p.W, p.F, p.H || [p.N[0]+GL.head*dx/d, p.N[1]+GL.head*dy/d], ik(p.N,p.W,GL.ua,GL.fa,p.eb??1), ik(p.P,p.F,GL.th,GL.sh,p.kb??-1)].forEach(add);
+    if (p.W2) add(p.W2); if (p.F2) add(p.F2);
+  }
+  for (const [k, ...v] of g.props || []) {
+    if (k === "box") { add([v[0], v[2]]); add([v[1], 67]); }
+    if (k === "ball") { add([v[0]-v[2], v[1]-v[2]]); add([v[0]+v[2], v[1]+v[2]]); }
+    if (k === "bar") { add([v[0]-14, v[1]]); add([v[0]+14, v[1]]); }
+    if (k === "wall" || k === "pole") add([v[0], ys.length ? Math.min(...ys) : 0]);
+  }
+  if (!(g.props || []).some(x => x[0] === "nofloor")) add([xs[0], 67]);
+  let x0 = Math.min(...xs) - 6, x1 = Math.max(...xs) + 6, y0 = Math.min(...ys) - 6, y1 = Math.max(...ys) + 3;
+  const minH = (x1 - x0) * .45; if (y1 - y0 < minH) y0 = y1 - minH; // keep low poses from turning into slivers
+  return [x0, y0, x1 - x0, y1 - y0].map(n => n.toFixed(1)).join(" ");
+}
+function propsSVG(g){
+  const pr = g.props || []; let s = pr.some(x => x[0] === "nofloor") ? "" : `<line class="gp" x1="-20" y1="66.8" x2="120" y2="66.8"/>`;
+  for (const [k, ...v] of pr) {
+    if (k === "wall") s += `<line class="gp" x1="${v[0]}" y1="-10" x2="${v[0]}" y2="67"/>`;
+    if (k === "pole") s += `<line class="gp" x1="${v[0]}" y1="-10" x2="${v[0]}" y2="67"/>`;
+    if (k === "bar") s += `<line class="gp" x1="${v[0]-14}" y1="${v[1]}" x2="${v[0]+14}" y2="${v[1]}"/>`;
+    if (k === "box") s += `<rect class="gb" x="${v[0]}" y="${v[2]}" width="${v[1]-v[0]}" height="${67-v[2]}" rx="1.5"/>`;
+    if (k === "ball") s += `<circle class="gb" cx="${v[0]}" cy="${v[1]}" r="${v[2]}"/>`;
+    if (k === "towel") s += `<line class="gt" x1="${v[0]}" y1="${v[1]}" x2="${v[2]}" y2="${v[3]}"/>`;
+  }
+  return s;
+}
+
+// Animate every mounted guide on the 2-1-2 tempo: 2 s down, 1 s hold, 2 s up, 0.5 s rest
+const ease = x => x < .5 ? 2*x*x : 1 - Math.pow(-2*x + 2, 2)/2;
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+function tempoT(ms){
+  const c = (ms / 1000) % 5.5;
+  return c < 2 ? ease(c/2) : c < 3 ? 1 : c < 5 ? 1 - ease((c-3)/2) : 0;
+}
+let guideRAF = 0;
+function guideTick(now){
+  const figs = document.querySelectorAll(".fig[data-mv]");
+  figs.forEach(el => { const g = GUIDES[el.dataset.mv][el.dataset.n-1]; if (g.b) el.innerHTML = figureSVG(g, tempoT(now)); });
+  guideRAF = figs.length && !REDUCED ? requestAnimationFrame(guideTick) : 0;
+}
+function guideHTML(mv, n, large){
+  const g = GUIDES[mv][n-1], st = step(mv, n);
+  const note = g.b ? (st.sec ? "" : t().tempo) : t().hold;
+  return `<div class="guide ${large?"lg":""}"><svg viewBox="${guideBox(g)}" role="img" aria-label="${esc(sName(mv,n))}">${propsSVG(g)}<g class="fig" data-mv="${mv}" data-n="${n}">${figureSVG(g, 0)}</g></svg>
+    <div><p>${esc(g[db.lang])}</p>${note ? `<small>${note}</small>` : ""}</div></div>`;
+}
+function startGuides(){ if (!guideRAF && !REDUCED) guideRAF = requestAnimationFrame(guideTick); }
 
 /* ============ State ============ */
 const $ = s => document.querySelector(s);
@@ -415,7 +654,7 @@ function tierPills(mv){
 }
 function mvCard(mv){
   const n = db.steps[mv];
-  return `<div class="card"><div class="info"><div class="name">${esc(mvName(mv,true))}</div>
+  return `<div class="card"><div class="info" data-guide="${mv}"><div class="name">${esc(mvName(mv,true))}</div>
     <div class="meta">${t().stepOf(n)} · ${esc(sName(mv,n))}</div>${tierPills(mv)}</div>
     <button class="play" data-mv="${mv}" aria-label="${esc(mvName(mv))}">▶</button></div>`;
 }
@@ -432,11 +671,18 @@ function renderToday(){
   }
   $("#todayList").innerHTML = html;
   document.querySelectorAll("#todayList .play").forEach(b => b.onclick = () => startWorkout([b.dataset.mv]));
+  document.querySelectorAll("#todayList [data-guide]").forEach(el => el.onclick = () => showGuide(el.dataset.guide));
   $("#todayBtns").innerHTML = today.length
     ? `<button class="big ghost" id="freeBtn">${t().free}</button><button class="big" id="goBtn">${t().startToday}</button>`
     : `<button class="big" id="freeBtn">${t().free}</button>`;
   $("#freeBtn").onclick = pickFree;
   if (today.length) $("#goBtn").onclick = () => startWorkout(today);
+}
+function showGuide(mv){
+  const n = db.steps[mv];
+  openSheet(`<h3>${esc(mvName(mv,true))} · ${t().stepOf(n)}</h3><p class="sub" style="margin-bottom:10px">${esc(sName(mv,n))}</p>${guideHTML(mv, n, true)}
+    <button class="opt primary" data-a="go">▶ ${t().startMv}</button>`, a => { if (a === "go") startWorkout([mv]); });
+  startGuides();
 }
 function pickFree(){
   openSheet(`<h3>${t().pickMv}</h3>` + MV.map(m => `<button class="opt" data-a="${m}"><b>${esc(mvName(m,true))}</b> <span style="color:var(--mute)">· ${t().stepOf(db.steps[m])}</span></button>`).join(""),
@@ -486,10 +732,11 @@ function renderActive(){
     <div class="mvname">${esc(mvName(mv,true))}${W.mvs.length>1?` · ${W.mi+1}/${W.mvs.length}`:""}</div>
     <h2 class="exname">${t().stepOf(n)}: ${esc(sName(mv,n))}</h2>
     <div class="goal">${t().goal}: ${st.goals.map((g,i)=>`${t().tiers[i]} ${fmtGoal(st,g)}`).join(" · ")}${st.side?` (${t().eachSide})`:""}</div>
+    ${guideHTML(mv, cur ? cur.step : n)}
     <ul class="queue">${rows}</ul>
     ${last ? `<p class="hint">${t().last}: ${last.map(v=>fmtVal(st,v)).join(", ")}</p>` : ""}
-    ${st.sec ? "" : `<p class="hint">${t().tempo}</p>`}
     <p class="hint" id="restLine"></p>`;
+  startGuides();
   const cs = cur ? step(mv, cur.step) : st;
   $("#unitLbl").textContent = cs.sec ? t().secs : t().reps;
   $("#valOut").textContent = cur ? cur.v : "–";
