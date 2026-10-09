@@ -417,7 +417,7 @@ const GUIDES = {
   {a:pl([22,64],-24,{W:[71,66],W2:[50,48],eb2:-1}), b:pl([22,64],-6,{W:[71,66],W2:[50,48],eb2:-1}),
    en:"Feet wide, one arm behind your back. Lower all the way, hips square to the floor.", hu:"Láb terpeszben, egyik kar a hátadon. Menj le teljesen, csípő párhuzamos a földdel."}],
  squat: [
-  {a:{N:[40,62],P:[44,40],H:[34,64],W:[48,48],F:[47,12],eb:-1}, b:{N:[40,62],P:[44,40],H:[34,64],W:[48,48],F:[26,42],kb:1,eb:-1},
+  {a:{N:[40,62],P:[44,40],H:[34,64],W:[48,48],F:[47,12],eb:-1}, b:{N:[40,62],P:[44,40],H:[34,64],W:[48,48],F:[37,38],eb:-1},
    en:"On your shoulders, hands on your lower back, legs up. Bend until your knees touch your forehead.", hu:"Tarkón állva, kéz a derékon, láb fent. Hajlíts, amíg a térded a homlokodhoz ér."},
   {a:{N:[70,30],P:[48,38],W:[74,44],F:[46,66]}, b:{N:[60,44],P:[40,56],W:[74,44],F:[46,66]}, props:[["box",68,92,44]],
    en:"Bent at the hips, hands on a chair. Squat until your hamstrings touch your calves.", hu:"Csípőből hajolva, kéz egy széken. Guggolj, amíg a combod hátsó része a vádlidhoz ér."},
@@ -540,6 +540,19 @@ function poseAt(g, t){ // t: 0 = a, 1 = b
   for (const k of ["eb","kb","eb2","kb2"]) out[k] = (t < .5 ? A[k] : (B[k] ?? A[k]));
   return out;
 }
+// Limb at time t. A hand or foot that stays in place (floor, wall, bar) is solved with IK so it
+// stays planted; a moving limb rotates its two segments from the start angles to the end angles,
+// so knees and elbows never flip and the way back retraces the way out.
+function limbAt(g, t, rk, tk, bk, l1, l2, def){
+  const A = g.a, B = g.b || g.a, tA = A[tk], tB = B[tk] || tA, rA = A[rk], rB = B[rk] || rA;
+  const bA = A[bk] ?? def, bB = B[bk] ?? bA, root = [lerp(rA[0], rB[0], t), lerp(rA[1], rB[1], t)];
+  if (Math.hypot(tA[0]-tB[0], tA[1]-tB[1]) < .5) return [ik(root, tA, l1, l2, bB), tA];
+  const ang = (r, tg, b) => { const J = ik(r, tg, l1, l2, b); return [Math.atan2(J[1]-r[1], J[0]-r[0]), Math.atan2(tg[1]-J[1], tg[0]-J[0])]; };
+  const [a1, a2] = ang(rA, tA, bA), [b1, b2] = ang(rB, tB, bB);
+  const mix = (x, y) => x + (((y - x + 3*Math.PI) % (2*Math.PI)) - Math.PI) * t;
+  const J = [root[0] + l1*Math.cos(mix(a1, b1)), root[1] + l1*Math.sin(mix(a1, b1))];
+  return [J, [J[0] + l2*Math.cos(mix(a2, b2)), J[1] + l2*Math.sin(mix(a2, b2))]];
+}
 // Mannequin-style figure: tapered outlined limbs, a chest on the front of the torso,
 // an egg head with dark hair on the back, hands and feet showing which way the body faces.
 // Every pose faces "forward" along the torso's right-hand normal, so front = rot90(torso).
@@ -553,15 +566,16 @@ function figureSVG(g, t){
   const seg = (a, b, w, far) => { outl += `<line class="fo" x1="${f(a[0])}" y1="${f(a[1])}" x2="${f(b[0])}" y2="${f(b[1])}" stroke-width="${w + 1.8}"/>`;
     fill += `<line class="fn${far ? " far" : ""}" x1="${f(a[0])}" y1="${f(a[1])}" x2="${f(b[0])}" y2="${f(b[1])}" stroke-width="${w}"/>`; };
   const flush = () => { const o = outl + fill; outl = fill = ""; return o; };
-  const arm = (W, eb, far) => { const E = ik(p.N, W, L.ua, L.fa, eb); seg(p.N, E, 4.2, far); seg(E, W, 3.4, far); seg(W, W, 4.4, far); return flush(); };
-  const leg = (F, kb, far) => {
-    const K = ik(p.P, F, L.th, L.sh, kb), sd = unit(K, F), toe = [sd[1], -sd[0]];
+  const arm = (k, far) => { const [E, W] = limbAt(g, t, "N", k, k === "W" ? "eb" : "eb2", L.ua, L.fa, 1);
+    seg(p.N, E, 4.2, far); seg(E, W, 3.4, far); seg(W, W, 4.4, far); return flush(); };
+  const leg = (k, far) => {
+    const [K, F] = limbAt(g, t, "P", k, k === "F" ? "kb" : "kb2", L.th, L.sh, -1), sd = unit(K, F), toe = [sd[1], -sd[0]];
     seg(p.P, K, 5.6, far); seg(K, F, 4.2, far); seg(F, add(F, toe, 4.2), 2.8, far); return flush();
   };
   let out = "";
-  if (p.W2) out += arm(p.W2, p.eb2 ?? 1, true);
-  if (p.F2) out += leg(p.F2, p.kb2 ?? -1, true);
-  out += leg(p.F, p.kb ?? -1, false);
+  if (p.W2) out += arm("W2", true);
+  if (p.F2) out += leg("F2", true);
+  out += leg("F", false);
   // torso like a mannequin: rib cage (pushed slightly to the front) + pelvis, joined at the waist
   const deg = Math.atan2(u[1], u[0])*180/Math.PI + 90;
   const egg = (c, rx, ry) => `<ellipse class="fb" cx="${f(c[0])}" cy="${f(c[1])}" rx="${rx}" ry="${ry}" transform="rotate(${f(deg)} ${f(c[0])} ${f(c[1])})"/>`;
@@ -576,7 +590,7 @@ function figureSVG(g, t){
   out += `<polygon class="fh" points="${hair.map(q => f(q[0]) + "," + f(q[1])).join(" ")}"/>`;
   const face = [-back[0], -back[1]], nose = [add(add(Hc, face, 4.1), a, 1.2), add(add(Hc, face, 7.4), a, -1.1), add(add(Hc, face, 4.1), a, -2.8)];
   out += `<polygon class="fb" points="${nose.map(q => f(q[0]) + "," + f(q[1])).join(" ")}"/>`;
-  out += arm(p.W, p.eb ?? 1, false);
+  out += arm("W", false);
   return out;
 }
 function guideBox(g){ // tight viewBox around both poses and the props
