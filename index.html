@@ -34,10 +34,13 @@ h3{margin:4px 0 10px}
 .guide small{display:block;margin-top:6px;color:var(--mute);font-size:12px}
 .guide.lg{flex-direction:column;align-items:stretch;padding:12px;background:var(--bg)}
 .guide.lg svg{width:100%;height:auto;max-height:240px}
-.gf{fill:none;stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
-.gf.far{opacity:.35}
-.gh{fill:var(--card);stroke:var(--ink);stroke-width:2.4}
-.guide.lg .gh{fill:var(--bg)}
+.guide{--fig:#f5b40a;--fig-far:#b98200;--fig-line:#3a2a05;--fig-hair:#7a5200}
+.fo{fill:none;stroke:var(--fig-line);stroke-linecap:round}
+.fn{fill:none;stroke:var(--fig);stroke-linecap:round}
+.fn.far{stroke:var(--fig-far)}
+.fb{fill:var(--fig);stroke:var(--fig-line);stroke-width:1.1;stroke-linejoin:round}
+.fb.far{fill:var(--fig-far)}
+.fh{fill:var(--fig-hair)}
 .gp{stroke:var(--mute);stroke-width:1.2}
 .gb{fill:none;stroke:var(--accent);stroke-width:1.4}
 .gt{stroke:var(--accent);stroke-width:2;stroke-dasharray:2 1.5}
@@ -437,7 +440,7 @@ const GUIDES = {
  pull: [
   {a:pl([66,66],-105,{W:[76,20],eb:-1}), b:pl([66,66],-92,{W:[76,20],eb:1}), props:[["pole",76]],
    en:"Hold a door frame or pole, lean back with a straight body. Pull your chest to it.", hu:"Fogj meg egy ajtókeretet vagy oszlopot, dőlj hátra egyenes testtel. Húzd hozzá a mellkasod."},
-  {a:pl([20,66],-10,{W:[72,34],eb:-1}), b:pl([20,66],-27,{W:[70,34],eb:1}), props:[["bar",71,34]],
+  {a:pl([20,66],-10,{W:[72,34],eb:-1}), b:pl([20,66],-27,{W:[70,34],eb:1}), props:[["bar",71,34]], flip:1,
    en:"Under a sturdy table or low bar, heels on the floor. Pull your chest up to it.", hu:"Stabil asztal vagy alacsony rúd alatt, sarok a földön. Húzd fel a mellkasod hozzá."},
   {a:{W:[50,-4],N:[50,18],P:[50,42],F:[78,46],kb:-1}, b:{W:[50,-4],N:[50,3],P:[50,27],F:[76,44],kb:-1}, props:[["bar",50,-4],["box",68,92,46]],
    en:"Hang from the bar with your heels on a chair in front. Pull until your chin clears the bar.", hu:"Lógj a rúdon, sarok egy széken elöl. Húzd fel magad, amíg az állad a rúd fölé ér."},
@@ -537,17 +540,44 @@ function poseAt(g, t){ // t: 0 = a, 1 = b
   for (const k of ["eb","kb","eb2","kb2"]) out[k] = (t < .5 ? A[k] : (B[k] ?? A[k]));
   return out;
 }
+// Mannequin-style figure: tapered outlined limbs, a chest on the front of the torso,
+// an egg head with dark hair on the back, hands and feet showing which way the body faces.
+// Every pose faces "forward" along the torso's right-hand normal, so front = rot90(torso).
 function figureSVG(g, t){
   const p = poseAt(g, t), L = GL, f = n => n.toFixed(1);
-  const dx = p.N[0]-p.P[0], dy = p.N[1]-p.P[1], d = Math.hypot(dx, dy) || 1;
-  const H = p.H || [p.N[0] + L.head*dx/d, p.N[1] + L.head*dy/d];
-  const E = ik(p.N, p.W, L.ua, L.fa, p.eb ?? 1), K = ik(p.P, p.F, L.th, L.sh, p.kb ?? -1);
-  const line = (pts, cls) => `<polyline class="${cls}" points="${pts.map(q => f(q[0])+","+f(q[1])).join(" ")}"/>`;
-  let far = "";
-  if (p.W2) far += line([p.N, ik(p.N, p.W2, L.ua, L.fa, p.eb2 ?? 1), p.W2], "gf far");
-  if (p.F2) far += line([p.P, ik(p.P, p.F2, L.th, L.sh, p.kb2 ?? -1), p.F2], "gf far");
-  return far + line([p.P, p.N], "gf") + line([p.N, E, p.W], "gf") + line([p.P, K, p.F], "gf") +
-    `<circle class="gh" cx="${f(H[0])}" cy="${f(H[1])}" r="4"/>`;
+  const unit = (a, b) => { const x = b[0]-a[0], y = b[1]-a[1], d = Math.hypot(x, y) || 1; return [x/d, y/d]; };
+  const add = (a, v, k) => [a[0] + v[0]*k, a[1] + v[1]*k];
+  const u = unit(p.P, p.N), fr = g.flip ? [u[1], -u[0]] : [-u[1], u[0]]; // flip: lying face-up with the head to the right
+  const Hc = p.H || add(p.N, u, L.head + 2);
+  let outl = "", fill = "";
+  const seg = (a, b, w, far) => { outl += `<line class="fo" x1="${f(a[0])}" y1="${f(a[1])}" x2="${f(b[0])}" y2="${f(b[1])}" stroke-width="${w + 1.8}"/>`;
+    fill += `<line class="fn${far ? " far" : ""}" x1="${f(a[0])}" y1="${f(a[1])}" x2="${f(b[0])}" y2="${f(b[1])}" stroke-width="${w}"/>`; };
+  const flush = () => { const o = outl + fill; outl = fill = ""; return o; };
+  const arm = (W, eb, far) => { const E = ik(p.N, W, L.ua, L.fa, eb); seg(p.N, E, 4.2, far); seg(E, W, 3.4, far); seg(W, W, 4.4, far); return flush(); };
+  const leg = (F, kb, far) => {
+    const K = ik(p.P, F, L.th, L.sh, kb), sd = unit(K, F), toe = [sd[1], -sd[0]];
+    seg(p.P, K, 5.6, far); seg(K, F, 4.2, far); seg(F, add(F, toe, 4.2), 2.8, far); return flush();
+  };
+  let out = "";
+  if (p.W2) out += arm(p.W2, p.eb2 ?? 1, true);
+  if (p.F2) out += leg(p.F2, p.kb2 ?? -1, true);
+  out += leg(p.F, p.kb ?? -1, false);
+  // torso like a mannequin: rib cage (pushed slightly to the front) + pelvis, joined at the waist
+  const deg = Math.atan2(u[1], u[0])*180/Math.PI + 90;
+  const egg = (c, rx, ry) => `<ellipse class="fb" cx="${f(c[0])}" cy="${f(c[1])}" rx="${rx}" ry="${ry}" transform="rotate(${f(deg)} ${f(c[0])} ${f(c[1])})"/>`;
+  const rib = add(add(p.N, u, -6.5), fr, 1), pel = add(p.P, u, 1.5);
+  seg(rib, pel, 6); out += flush() + egg(pel, 4.4, 4.6) + egg(rib, 5.3, 7.4);
+  seg(p.N, add(p.N, unit(p.N, Hc), 3), 3); out += flush(); // neck
+  // head: egg along the neck axis, hair on the back half so the face side reads at a glance
+  const a = unit(p.N, Hc), across = [-a[1], a[0]], back = (across[0]*fr[0] + across[1]*fr[1]) > 0 ? [-across[0], -across[1]] : across;
+  out += `<ellipse class="fb" cx="${f(Hc[0])}" cy="${f(Hc[1])}" rx="4.8" ry="5.9" transform="rotate(${f(Math.atan2(a[1], a[0])*180/Math.PI + 90)} ${f(Hc[0])} ${f(Hc[1])})"/>`;
+  const hair = [];
+  for (let i = 0; i <= 10; i++) { const s_ = i/10 * Math.PI * .9; hair.push(add(add(Hc, a, 5.5*Math.cos(s_)), back, 4.4*Math.sin(s_))); }
+  out += `<polygon class="fh" points="${hair.map(q => f(q[0]) + "," + f(q[1])).join(" ")}"/>`;
+  const face = [-back[0], -back[1]], nose = [add(add(Hc, face, 4.1), a, 1.2), add(add(Hc, face, 7.4), a, -1.1), add(add(Hc, face, 4.1), a, -2.8)];
+  out += `<polygon class="fb" points="${nose.map(q => f(q[0]) + "," + f(q[1])).join(" ")}"/>`;
+  out += arm(p.W, p.eb ?? 1, false);
+  return out;
 }
 function guideBox(g){ // tight viewBox around both poses and the props
   const xs = [], ys = [], add = q => { xs.push(q[0]); ys.push(q[1]); };
@@ -563,7 +593,7 @@ function guideBox(g){ // tight viewBox around both poses and the props
     if (k === "wall" || k === "pole") add([v[0], ys.length ? Math.min(...ys) : 0]);
   }
   if (!(g.props || []).some(x => x[0] === "nofloor")) add([xs[0], 67]);
-  let x0 = Math.min(...xs) - 6, x1 = Math.max(...xs) + 6, y0 = Math.min(...ys) - 6, y1 = Math.max(...ys) + 3;
+  let x0 = Math.min(...xs) - 9, x1 = Math.max(...xs) + 9, y0 = Math.min(...ys) - 9, y1 = Math.max(...ys) + 3;
   const minH = (x1 - x0) * .45; if (y1 - y0 < minH) y0 = y1 - minH; // keep low poses from turning into slivers
   return [x0, y0, x1 - x0, y1 - y0].map(n => n.toFixed(1)).join(" ");
 }
