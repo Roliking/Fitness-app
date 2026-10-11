@@ -34,13 +34,9 @@ h3{margin:4px 0 10px}
 .guide small{display:block;margin-top:6px;color:var(--mute);font-size:12px}
 .guide.lg{flex-direction:column;align-items:stretch;padding:12px;background:var(--bg)}
 .guide.lg svg{width:100%;height:auto;max-height:240px}
-.guide{--fig:#f5b40a;--fig-far:#b98200;--fig-line:#3a2a05;--fig-hair:#7a5200}
-.fo{fill:none;stroke:var(--fig-line);stroke-linecap:round}
-.fn{fill:none;stroke:var(--fig);stroke-linecap:round}
-.fn.far{stroke:var(--fig-far)}
-.fb{fill:var(--fig);stroke:var(--fig-line);stroke-width:1.1;stroke-linejoin:round}
-.fb.far{fill:var(--fig-far)}
-.fh{fill:var(--fig-hair)}
+.fa{fill:url(#figNear);stroke:#7a3300;stroke-width:.7;stroke-linejoin:round}
+.fa.far{fill:url(#figFar)}
+.fl{fill:none;stroke:#a84a00;stroke-width:.55;stroke-linecap:round;opacity:.75}
 .gp{stroke:var(--mute);stroke-width:1.2}
 .gb{fill:none;stroke:var(--accent);stroke-width:1.4}
 .gt{stroke:var(--accent);stroke-width:2;stroke-dasharray:2 1.5}
@@ -220,6 +216,10 @@ nav.hide{display:none}
   </nav>
 </div>
 
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <linearGradient id="figNear" x1="0" y1="0" x2=".35" y2="1"><stop offset="0" stop-color="#ffc06a"/><stop offset=".45" stop-color="#ff9425"/><stop offset="1" stop-color="#d9620a"/></linearGradient>
+  <linearGradient id="figFar" x1="0" y1="0" x2=".35" y2="1"><stop offset="0" stop-color="#e5872c"/><stop offset="1" stop-color="#a94a06"/></linearGradient>
+</defs></svg>
 <div class="sheet-bg" id="sheetBg"><div class="sheet" id="sheet"></div></div>
 <input type="file" id="importFile" accept="application/json" hidden>
 
@@ -553,43 +553,70 @@ function limbAt(g, t, rk, tk, bk, l1, l2, def){
   const J = [root[0] + l1*Math.cos(mix(a1, b1)), root[1] + l1*Math.sin(mix(a1, b1))];
   return [J, [J[0] + l2*Math.cos(mix(a2, b2)), J[1] + l2*Math.sin(mix(a2, b2))]];
 }
-// Mannequin-style figure: tapered outlined limbs, a chest on the front of the torso,
-// an egg head with dark hair on the back, hands and feet showing which way the body faces.
+// Anatomical figure in the style of illustrated exercise guides: a muscular silhouette
+// (chest and abs on the front, shoulder blades and glutes on the back), muscle-shaped limbs,
+// a faceless head with the jaw jutting forward, and shaped hands and feet.
 // Every pose faces "forward" along the torso's right-hand normal, so front = rot90(torso).
+const V = {
+  add: (a, v, k) => [a[0] + v[0]*k, a[1] + v[1]*k],
+  unit: (a, b) => { const x = b[0]-a[0], y = b[1]-a[1], d = Math.hypot(x, y) || 1; return [x/d, y/d]; },
+  len: (a, b) => Math.hypot(b[0]-a[0], b[1]-a[1])
+};
+const fx = n => n.toFixed(2);
+// closed smooth path through points (Catmull-Rom → cubic Bézier)
+function smooth(pts){
+  const n = pts.length; let d = `M${fx(pts[0][0])},${fx(pts[0][1])}`;
+  for (let i = 0; i < n; i++) {
+    const p0 = pts[(i-1+n)%n], p1 = pts[i], p2 = pts[(i+1)%n], p3 = pts[(i+2)%n];
+    d += `C${fx(p1[0]+(p2[0]-p0[0])/6)},${fx(p1[1]+(p2[1]-p0[1])/6)} ${fx(p2[0]-(p3[0]-p1[0])/6)},${fx(p2[1]-(p3[1]-p1[1])/6)} ${fx(p2[0])},${fx(p2[1])}`;
+  }
+  return d + "Z";
+}
+// a limb segment A→B: tapered, with a muscle belly bulging toward `side`
+function muscle(A, B, wA, wB, belly, side, at = .38){
+  const d = V.unit(A, B), n = [-d[1], d[0]], L = V.len(A, B), s = (n[0]*side[0] + n[1]*side[1]) >= 0 ? 1 : -1;
+  const at_ = (k, off) => V.add(V.add(A, d, L*k), n, off);
+  const hA = wA/2, hB = wB/2;
+  return smooth([at_(0, s*hA), at_(at, s*(hA + belly)), at_(.85, s*hB*1.05), V.add(B, d, hB*.8), at_(.85, -s*hB*1.05),
+    at_(at + .1, -s*(hA + belly*.35)), at_(0, -s*hA), V.add(A, d, -hA*.75)]);
+}
 function figureSVG(g, t){
-  const p = poseAt(g, t), L = GL, f = n => n.toFixed(1);
-  const unit = (a, b) => { const x = b[0]-a[0], y = b[1]-a[1], d = Math.hypot(x, y) || 1; return [x/d, y/d]; };
-  const add = (a, v, k) => [a[0] + v[0]*k, a[1] + v[1]*k];
-  const u = unit(p.P, p.N), fr = g.flip ? [u[1], -u[0]] : [-u[1], u[0]]; // flip: lying face-up with the head to the right
-  const Hc = p.H || add(p.N, u, L.head + 2);
-  let outl = "", fill = "";
-  const seg = (a, b, w, far) => { outl += `<line class="fo" x1="${f(a[0])}" y1="${f(a[1])}" x2="${f(b[0])}" y2="${f(b[1])}" stroke-width="${w + 1.8}"/>`;
-    fill += `<line class="fn${far ? " far" : ""}" x1="${f(a[0])}" y1="${f(a[1])}" x2="${f(b[0])}" y2="${f(b[1])}" stroke-width="${w}"/>`; };
-  const flush = () => { const o = outl + fill; outl = fill = ""; return o; };
-  const arm = (k, far) => { const [E, W] = limbAt(g, t, "N", k, k === "W" ? "eb" : "eb2", L.ua, L.fa, 1);
-    seg(p.N, E, 4.2, far); seg(E, W, 3.4, far); seg(W, W, 4.4, far); return flush(); };
+  const p = poseAt(g, t), L = GL;
+  const u = V.unit(p.P, p.N), fr = g.flip ? [u[1], -u[0]] : [-u[1], u[0]]; // flip: lying face-up with the head to the right
+  const Hc = p.H || V.add(p.N, u, L.head + 2.5);
+  const path = (d, far) => `<path class="fa${far ? " far" : ""}" d="${d}"/>`;
+  // outer side of a bent joint (where the kneecap / elbow point is); falls back to `fb` when straight
+  const outer = (R, J, E, fb) => { const m = [(R[0]+E[0])/2, (R[1]+E[1])/2], v = [J[0]-m[0], J[1]-m[1]], k = Math.hypot(...v);
+    return k > 1.2 ? [v[0]/k, v[1]/k] : fb; };
+  const arm = (k, far) => {
+    const [E, W] = limbAt(g, t, "N", k, k === "W" ? "eb" : "eb2", L.ua, L.fa, 1), o = outer(p.N, E, W, [-fr[0], -fr[1]]);
+    const d = V.unit(E, W), hand = smooth([V.add(W, [-d[1], d[0]], 1.5), V.add(V.add(W, d, 2.6), [-d[1], d[0]], 1.3), V.add(W, d, 4.2),
+      V.add(V.add(W, d, 2.6), [d[1], -d[0]], 1.5), V.add(W, [d[1], -d[0]], 1.4), V.add(W, d, -.6)]);
+    return path(muscle(p.N, E, 6.2, 4.2, 1.5, [-o[0], -o[1]]), far) + path(muscle(E, W, 4.6, 2.8, 1.1, o, .25), far) + path(hand, far);
+  };
   const leg = (k, far) => {
-    const [K, F] = limbAt(g, t, "P", k, k === "F" ? "kb" : "kb2", L.th, L.sh, -1), sd = unit(K, F), toe = [sd[1], -sd[0]];
-    seg(p.P, K, 5.6, far); seg(K, F, 4.2, far); seg(F, add(F, toe, 4.2), 2.8, far); return flush();
+    const [K, F] = limbAt(g, t, "P", k, k === "F" ? "kb" : "kb2", L.th, L.sh, -1), o = outer(p.P, K, F, fr);
+    const sd = V.unit(K, F), toe = [sd[1], -sd[0]];
+    const foot = smooth([V.add(F, toe, -1.8), V.add(V.add(F, toe, -.6), sd, 1.6), V.add(V.add(F, toe, 4.6), sd, 1.3), V.add(V.add(F, toe, 5.4), sd, .2),
+      V.add(V.add(F, toe, 3), sd, -.6), V.add(F, sd, -1.6)]);
+    return path(muscle(p.P, K, 8.8, 5.2, 1.9, o), far) + path(muscle(K, F, 5.4, 3, 1.8, [-o[0], -o[1]], .3), far) + path(foot, far);
   };
   let out = "";
   if (p.W2) out += arm("W2", true);
   if (p.F2) out += leg("F2", true);
   out += leg("F", false);
-  // torso like a mannequin: rib cage (pushed slightly to the front) + pelvis, joined at the waist
-  const deg = Math.atan2(u[1], u[0])*180/Math.PI + 90;
-  const egg = (c, rx, ry) => `<ellipse class="fb" cx="${f(c[0])}" cy="${f(c[1])}" rx="${rx}" ry="${ry}" transform="rotate(${f(deg)} ${f(c[0])} ${f(c[1])})"/>`;
-  const rib = add(add(p.N, u, -6.5), fr, 1), pel = add(p.P, u, 1.5);
-  seg(rib, pel, 6); out += flush() + egg(pel, 4.4, 4.6) + egg(rib, 5.3, 7.4);
-  seg(p.N, add(p.N, unit(p.N, Hc), 3), 3); out += flush(); // neck
-  // head: egg along the neck axis, hair on the back half so the face side reads at a glance
-  const a = unit(p.N, Hc), across = [-a[1], a[0]], back = (across[0]*fr[0] + across[1]*fr[1]) > 0 ? [-across[0], -across[1]] : across;
-  out += `<ellipse class="fb" cx="${f(Hc[0])}" cy="${f(Hc[1])}" rx="4.8" ry="5.9" transform="rotate(${f(Math.atan2(a[1], a[0])*180/Math.PI + 90)} ${f(Hc[0])} ${f(Hc[1])})"/>`;
-  const hair = [];
-  for (let i = 0; i <= 10; i++) { const s_ = i/10 * Math.PI * .9; hair.push(add(add(Hc, a, 5.5*Math.cos(s_)), back, 4.4*Math.sin(s_))); }
-  out += `<polygon class="fh" points="${hair.map(q => f(q[0]) + "," + f(q[1])).join(" ")}"/>`;
-  const face = [-back[0], -back[1]], nose = [add(add(Hc, face, 4.1), a, 1.2), add(add(Hc, face, 7.4), a, -1.1), add(add(Hc, face, 4.1), a, -2.8)];
-  out += `<polygon class="fb" points="${nose.map(q => f(q[0]) + "," + f(q[1])).join(" ")}"/>`;
+  // torso in its own frame: along = from pelvis to neck, fwd = toward the chest
+  const T = (along, fwd) => V.add(V.add(p.P, u, along), fr, fwd), Lt = V.len(p.P, p.N);
+  out += path(smooth([T(Lt + 1, 1.6), T(Lt*.82, 6.2), T(Lt*.62, 6.0), T(Lt*.45, 4.2), T(Lt*.22, 4.0), T(0, 3.8), T(-3, 1.5),
+    T(-2.6, -3.8), T(1.4, -5.6), T(Lt*.3, -3.6), T(Lt*.55, -4.4), T(Lt*.8, -6.2), T(Lt + .8, -3.8)]));
+  // muscle lines: pec, abs, glute crease
+  const ln = (a, b, c) => `<path class="fl" d="M${fx(a[0])},${fx(a[1])}Q${fx(b[0])},${fx(b[1])} ${fx(c[0])},${fx(c[1])}"/>`;
+  out += ln(T(Lt*.82, 1.5), T(Lt*.6, 2.8), T(Lt*.6, 5)) + ln(T(Lt*.5, 2.6), T(Lt*.3, 2.5), T(Lt*.1, 2.2)) + ln(T(1.6, -5), T(-.4, -3.4), T(-1.6, -1.2));
+  // neck + head: faceless, cranium at the back, jaw jutting forward-down
+  const a = V.unit(p.N, Hc), across = [-a[1], a[0]], ff = (across[0]*fr[0] + across[1]*fr[1]) >= 0 ? across : [-across[0], -across[1]];
+  out += path(muscle(V.add(p.N, u, -1.5), V.add(Hc, a, -2.5), 4.2, 3.2, .2, ff));
+  const Hd = (al, f) => V.add(V.add(Hc, a, al), ff, f);
+  out += path(smooth([Hd(5.6, -.4), Hd(3.6, -4.2), Hd(.2, -4.6), Hd(-3, -2.6), Hd(-4.6, .8), Hd(-4.2, 3.4), Hd(-1.6, 4.6), Hd(1.8, 4.4), Hd(4.4, 2.6)]));
   out += arm("W", false);
   return out;
 }
