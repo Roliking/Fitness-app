@@ -82,7 +82,10 @@ nav.hide{display:none}
 .tsteps li{display:flex;justify-content:space-between;gap:10px;padding:12px 14px;background:var(--card);border-radius:12px;margin-bottom:8px}
 .tsteps li span{color:var(--mute);text-align:right}
 .tlist{margin:0 0 12px;padding-left:20px;color:var(--mute)} .tlist li{margin:6px 0}
-.tskip{float:right;height:36px;padding:0 12px;border-radius:10px;background:var(--card);font-size:13px;font-weight:600;color:var(--mute)}
+.section.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.section.row .tskip{flex:none;text-transform:none;letter-spacing:0}
+#tStop{float:right}
+.tskip{height:36px;padding:0 12px;border-radius:10px;background:var(--card);font-size:13px;font-weight:600;color:var(--mute)}
 .end{height:56px;padding:0 16px;border-radius:14px;background:var(--panel-2);color:#ff8a8a;font-weight:700}
 .minor{height:56px;padding:0 14px;border-radius:14px;background:var(--panel-2);color:#fff;font-weight:600}
 .log{flex:1;height:72px;border-radius:22px;background:var(--accent);color:var(--on-accent);font-size:19px;font-weight:800;padding:0 12px}
@@ -978,7 +981,7 @@ function renderProgram(){
       <button class="info" data-info="${k}" aria-label="Info" aria-expanded="${open}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v6"/><circle cx="12" cy="7.5" r="1.2" fill="currentColor" stroke="none"/></svg></button>${det}</div>`;
   }).join("");
   if (db.program === "solitary") h += `<p class="hint">${t().extras}</p>`;
-  h += `<div class="section">${t().yourSteps}<button class="tskip" id="testBtn" style="margin-top:-8px">${t().retest}</button></div>`;
+  h += `<div class="section row"><span>${t().yourSteps}</span><button class="tskip" id="testBtn">${t().retest}</button></div>`;
   h += MV.map(m => `<div class="srow"><div class="sinfo"><b>${esc(mvName(m,true))}</b><small>${esc(sName(m,db.steps[m]))}</small></div>
       <button data-st="${m}" data-d="-1" aria-label="−">−</button><span class="snum">${db.steps[m]}</span><button data-st="${m}" data-d="1" aria-label="+">+</button></div>`).join("");
   h += `<div class="section">${t().language}</div><div class="btnrow">
