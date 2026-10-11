@@ -75,6 +75,14 @@ nav.hide{display:none}
 .stepper button{width:72px;height:64px;border-radius:14px;background:#3a3f48;font-size:30px;font-weight:700;color:#fff}
 .stepper button.plus{background:#4a505c}
 .actions{display:flex;align-items:center;gap:10px}
+.stepper input{flex:1;min-width:0;width:100%;text-align:center;font:inherit;font-size:38px;font-weight:800;font-variant-numeric:tabular-nums;color:#fff;background:none;border:0;outline:0}
+.tdots{display:flex;gap:6px;margin:8px 0 14px}
+.tdots i{flex:1;height:5px;border-radius:3px;background:var(--line)} .tdots i.on{background:var(--accent)} .tdots i.done{background:var(--accent);opacity:.45}
+.tsteps{list-style:none;margin:0;padding:0}
+.tsteps li{display:flex;justify-content:space-between;gap:10px;padding:12px 14px;background:var(--card);border-radius:12px;margin-bottom:8px}
+.tsteps li span{color:var(--mute);text-align:right}
+.tlist{margin:0 0 12px;padding-left:20px;color:var(--mute)} .tlist li{margin:6px 0}
+.tskip{float:right;height:36px;padding:0 12px;border-radius:10px;background:var(--card);font-size:13px;font-weight:600;color:var(--mute)}
 .end{height:56px;padding:0 16px;border-radius:14px;background:var(--panel-2);color:#ff8a8a;font-weight:700}
 .minor{height:56px;padding:0 14px;border-radius:14px;background:var(--panel-2);color:#fff;font-weight:600}
 .log{flex:1;height:72px;border-radius:22px;background:var(--accent);color:var(--on-accent);font-size:19px;font-weight:800;padding:0 12px}
@@ -196,6 +204,14 @@ nav.hide{display:none}
     </div>
   </section>
 
+  <section class="screen" id="s-test">
+    <div class="top" id="testTop"></div>
+    <div class="panel">
+      <div class="stepper" id="tStepper"><label id="tUnit"></label><button data-ts="-" aria-label="−">−</button><input id="tVal" inputmode="numeric" autocomplete="off" aria-label="result"><button class="plus" data-ts="+" aria-label="+">+</button></div>
+      <div class="actions"><button class="end" id="tLeft"></button><button class="log" id="tRight"></button></div>
+    </div>
+  </section>
+
   <section class="screen" id="s-progress">
     <div class="top">
       <div class="chart" id="pgChart"></div>
@@ -313,7 +329,11 @@ const PROGRAMS = {
 /* ============ i18n ============ */
 const T = {
  hu: {
-  tabs:["Főoldal","Fejlődés","Edzés","Profil"], bodyWeight:"Testsúly", legDone:"Edzettél", legMiss:"Kimaradt", legPlan:"Tervezett",
+  tabs:["Főoldal","Fejlődés","Edzés","Profil"],
+  tIntroT:"Találd meg a kezdő szintedet", tIntro:["Mind a hat gyakorlatnál az 1. lépéstől haladsz felfelé.","Minden lépésből végezz egy sorozatot tökéletes technikával, amennyit csak tudsz, és írd be.","Ha eléred a továbblépési célt, jön a következő lépés. Ha nem, ott kezdesz.","Pihenj 1–2 percet a próbák között."],
+  tBook:"A könyv azt ajánlja, hogy mindenki az 1. lépéssel kezdjen – a teszt csak gyorsítja ezt.", tStart:"Teszt indítása", tSkipAll:"Mind 1. lépéstől",
+  tDo:"Egy sorozat, tökéletes technikával – amennyi megy.", tTarget:"Továbblépés", tMin:"Kezdő szint", tCant:"Nem megy", tNext:"Rögzítés", tStop:"Itt kezdek",
+  tDoneT:"A kezdő lépéseid", tRetake:"Újra", tGo:"Kezdjük az edzést", retest:"Szintfelmérő teszt", bodyWeight:"Testsúly", legDone:"Edzettél", legMiss:"Kimaradt", legPlan:"Tervezett",
   mv:{push:"Fekvőtámasz",squat:"Guggolás",pull:"Húzódzkodás",leg:"Lábemelés",bridge:"Híd",hspu:"Kézenállás"},
   mvLong:{hspu:"Fekvőtámasz kézenállásban"},
   prog:{fresh:"Friss hús",good:"Jó magaviselet",veteran:"Veterán",solitary:"Magánzárka",supermax:"Supermax"},
@@ -345,7 +365,11 @@ const T = {
   extras:"A könyv itt fogás-, vádli- és nyakgyakorlatokat is ad – ezeket az app nem követi."
  },
  en: {
-  tabs:["Home","Progress","Workout","Profile"], bodyWeight:"Body weight", legDone:"Trained", legMiss:"Missed", legPlan:"Planned",
+  tabs:["Home","Progress","Workout","Profile"],
+  tIntroT:"Find your starting level", tIntro:["For each of the six movements you work up from step 1.","On each step, do one set with perfect form – as many as you can – and enter it.","Beat the move-on target and you try the next step. Otherwise, that's where you start.","Rest 1–2 minutes between tries."],
+  tBook:"The book recommends everyone starts at step 1 – the test just speeds that up.", tStart:"Start the test", tSkipAll:"All at step 1",
+  tDo:"One set with perfect form – as many as you can.", tTarget:"Move on at", tMin:"Beginner", tCant:"Can't do it", tNext:"Save result", tStop:"Start here",
+  tDoneT:"Your starting steps", tRetake:"Retake", tGo:"Start training", retest:"Retake level test", bodyWeight:"Body weight", legDone:"Trained", legMiss:"Missed", legPlan:"Planned",
   mv:{push:"Push-up",squat:"Squat",pull:"Pull-up",leg:"Leg raise",bridge:"Bridge",hspu:"Handstand"},
   mvLong:{hspu:"Handstand push-up"},
   prog:{fresh:"New Blood",good:"Good Behavior",veteran:"Veterano",solitary:"Solitary Confinement",supermax:"Supermax"},
@@ -708,7 +732,7 @@ function bestTier(mv, n){
 /* ============ Tabs ============ */
 function show(id){
   document.querySelectorAll(".screen").forEach(s => s.classList.toggle("on", s.id === "s-"+id));
-  $("#nav").classList.toggle("hide", id === "active");
+  $("#nav").classList.toggle("hide", id === "active" || id === "test");
   document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.t === id));
 }
 document.querySelectorAll("nav button").forEach(b => b.onclick = () => { show(b.dataset.t); render(b.dataset.t); });
@@ -952,7 +976,7 @@ function renderProgram(){
       <button class="info" data-info="${k}" aria-label="Info" aria-expanded="${open}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v6"/><circle cx="12" cy="7.5" r="1.2" fill="currentColor" stroke="none"/></svg></button>${det}</div>`;
   }).join("");
   if (db.program === "solitary") h += `<p class="hint">${t().extras}</p>`;
-  h += `<div class="section">${t().yourSteps}</div>`;
+  h += `<div class="section">${t().yourSteps}<button class="tskip" id="testBtn" style="margin-top:-8px">${t().retest}</button></div>`;
   h += MV.map(m => `<div class="srow"><div class="sinfo"><b>${esc(mvName(m,true))}</b><small>${esc(sName(m,db.steps[m]))}</small></div>
       <button data-st="${m}" data-d="-1" aria-label="−">−</button><span class="snum">${db.steps[m]}</span><button data-st="${m}" data-d="1" aria-label="+">+</button></div>`).join("");
   h += `<div class="section">${t().language}</div><div class="btnrow">
@@ -975,6 +999,7 @@ function renderProgram(){
   });
   document.querySelectorAll("[data-l]").forEach(b => b.onclick = () => { db.lang = b.dataset.l; save(); labelTabs(); renderProgram(); });
   $("#exportBtn").onclick = exportData;
+  $("#testBtn").onclick = startTest;
   $("#importBtn").onclick = () => $("#importFile").click();
   $("#resetBtn").onclick = () => { if (confirm(t().resetQ)) { const l = db.lang; db = fresh(); db.lang = l; save(); renderProgram(); } };
 }
@@ -1062,7 +1087,55 @@ function renderHome(){
 }
 $("#bwIn").addEventListener("keydown", e => { if (e.key === "Enter") saveWeight(); });
 
-labelTabs(); renderHome();
+/* ============ Level test ============ */
+// Walk up each movement: one max set per step. Beat the progression target → next step;
+// otherwise start here (or one step lower if even the beginner target wasn't reached).
+let TT = null;
+function startTest(){ TT = {phase:"intro", mi:0, n:1, v:"", res:{}}; show("test"); renderTest(); }
+function renderTest(){
+  const top = $("#testTop"), stp = $("#tStepper"), L = $("#tLeft"), R = $("#tRight");
+  if (TT.phase === "intro") {
+    top.innerHTML = `<h1>${t().tIntroT}</h1><ol class="tlist">${t().tIntro.map(x => `<li>${x}</li>`).join("")}</ol><p class="hint">${t().tBook}</p>`;
+    stp.style.display = "none"; L.textContent = t().tSkipAll; R.textContent = t().tStart; return;
+  }
+  if (TT.phase === "done") {
+    top.innerHTML = `<h1>${t().tDoneT}</h1><ul class="tsteps">${MV.map(m => `<li><b>${esc(mvName(m,true))}</b><span>${t().stepOf(TT.res[m])} · ${esc(sName(m, TT.res[m]))}</span></li>`).join("")}</ul>`;
+    stp.style.display = "none"; L.textContent = t().tRetake; R.textContent = t().tGo; return;
+  }
+  const mv = MV[TT.mi], n = TT.n, st = step(mv, n), unit = st.sec ? t().secs : t().reps, side = st.side ? ` (${t().eachSide})` : "";
+  top.innerHTML = `<button class="tskip" id="tStop">${t().tStop}</button>
+    <div class="mvname">${esc(mvName(mv,true))} · ${TT.mi+1}/6</div>
+    <div class="tdots">${MV.map((_,i) => `<i class="${i < TT.mi ? "done" : i === TT.mi ? "on" : ""}"></i>`).join("")}</div>
+    <h2 class="exname">${t().stepOf(n)}: ${esc(sName(mv,n))}</h2>
+    ${guideHTML(mv, n)}
+    <p class="hint">${t().tDo}</p>
+    <p class="hint"><b>${t().tTarget}: ${st.goals[2][1]} ${unit}${side}</b> · ${t().tMin}: ${st.goals[0][1]} ${unit}</p>`;
+  stp.style.display = ""; $("#tUnit").textContent = unit; $("#tVal").value = TT.v; $("#tVal").placeholder = "0";
+  L.textContent = t().tCant; R.textContent = t().tNext;
+  $("#tStop").onclick = () => place(n);
+  startGuides();
+}
+function place(n){ TT.res[MV[TT.mi]] = n; TT.mi++; TT.n = 1; TT.v = ""; if (TT.mi >= MV.length) TT.phase = "done"; buzz([40,30,40]); renderTest(); }
+$("#tVal").addEventListener("input", e => { e.target.value = e.target.value.replace(/\D/g, "").slice(0, 3); TT.v = e.target.value; });
+document.querySelectorAll("[data-ts]").forEach(b => b.onclick = () => {
+  const st = step(MV[TT.mi], TT.n), d = st.sec ? 5 : 1, v = Math.max(0, (parseInt(TT.v) || 0) + (b.dataset.ts === "+" ? d : -d));
+  TT.v = String(v); $("#tVal").value = TT.v; buzz(8);
+});
+$("#tLeft").onclick = () => {
+  if (TT.phase === "intro") { db.placed = true; save(); show("home"); renderHome(); return; }
+  if (TT.phase === "done") { startTest(); return; }
+  place(Math.max(1, TT.n - 1)); // can't do this step at all → the one before
+};
+$("#tRight").onclick = () => {
+  if (TT.phase === "intro") { TT.phase = "test"; renderTest(); return; }
+  if (TT.phase === "done") { Object.assign(db.steps, TT.res); db.placed = true; save(); TT = null; show("home"); renderHome(); return; }
+  const st = step(MV[TT.mi], TT.n), v = parseInt(TT.v) || 0;
+  if (v >= st.goals[2][1]) { if (TT.n < 10) { TT.n++; TT.v = ""; buzz(30); renderTest(); } else place(10); }
+  else place(v < st.goals[0][1] && TT.n > 1 ? TT.n - 1 : TT.n);
+};
+
+labelTabs();
+if (!db.placed && !db.sessions.length) startTest(); else renderHome();
 </script>
 </body>
 </html>
