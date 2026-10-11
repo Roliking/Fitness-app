@@ -703,6 +703,8 @@ const fresh = () => ({ lang: "en", program:"fresh",
   steps:{push:1,squat:1,pull:1,leg:1,bridge:1,hspu:1}, sessions:[], body:[] });
 let db;
 try { db = Object.assign(fresh(), JSON.parse(localStorage.getItem(KEY)) || {}); } catch { db = fresh(); }
+// one-time fix: before any workout is logged nothing can count as missed, so restart the count now
+if (db.placed && !db.sessions.length && !db.sinceFixed) { db.since = Date.now(); db.sinceFixed = 1; try { localStorage.setItem(KEY, JSON.stringify(db)); } catch {} }
 if (!db.since) { db.since = db.sessions.length ? Math.min(...db.sessions.map(s => s.date)) : Date.now(); try { localStorage.setItem(KEY, JSON.stringify(db)); } catch {} }
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch {} };
 const t = () => T[db.lang];
@@ -990,7 +992,7 @@ function renderProgram(){
   $("#wLabel").textContent = t().bodyWeight;
   const lastW = db.body[db.body.length-1];
   $("#bwIn").placeholder = lastW ? fmtKg(lastW.kg) : `00${DEC}0`;
-  document.querySelectorAll("[data-p]").forEach(b => b.onclick = () => { if (db.program === b.dataset.p) return; db.program = b.dataset.p; save(); buzz(10); renderProgram(); });
+  document.querySelectorAll("[data-p]").forEach(b => b.onclick = () => { if (db.program === b.dataset.p) return; db.program = b.dataset.p; db.since = Date.now(); save(); buzz(10); renderProgram(); });
   document.querySelectorAll("[data-info]").forEach(b => b.onclick = e => {
     e.stopPropagation(); const k = b.dataset.info; progOpen.has(k) ? progOpen.delete(k) : progOpen.add(k); buzz(8); renderProgram();
   });
@@ -1122,13 +1124,13 @@ document.querySelectorAll("[data-ts]").forEach(b => b.onclick = () => {
   TT.v = String(v); $("#tVal").value = TT.v; buzz(8);
 });
 $("#tLeft").onclick = () => {
-  if (TT.phase === "intro") { db.placed = true; save(); show("home"); renderHome(); return; }
+  if (TT.phase === "intro") { db.placed = true; db.since = Date.now(); save(); show("home"); renderHome(); return; }
   if (TT.phase === "done") { startTest(); return; }
   place(Math.max(1, TT.n - 1)); // can't do this step at all → the one before
 };
 $("#tRight").onclick = () => {
   if (TT.phase === "intro") { TT.phase = "test"; renderTest(); return; }
-  if (TT.phase === "done") { Object.assign(db.steps, TT.res); db.placed = true; save(); TT = null; show("home"); renderHome(); return; }
+  if (TT.phase === "done") { Object.assign(db.steps, TT.res); db.placed = true; db.since = Date.now(); save(); TT = null; show("home"); renderHome(); return; }
   const st = step(MV[TT.mi], TT.n), v = parseInt(TT.v) || 0;
   if (v >= st.goals[2][1]) { if (TT.n < 10) { TT.n++; TT.v = ""; buzz(30); renderTest(); } else place(10); }
   else place(v < st.goals[0][1] && TT.n > 1 ? TT.n - 1 : TT.n);
