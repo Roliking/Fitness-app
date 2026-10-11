@@ -76,6 +76,7 @@ nav.hide{display:none}
 .stepper button.plus{background:#4a505c}
 .actions{display:flex;align-items:center;gap:10px}
 .stepper input{flex:1;min-width:0;width:100%;text-align:center;font:inherit;font-size:38px;font-weight:800;font-variant-numeric:tabular-nums;color:#fff;background:none;border:0;outline:0}
+#tLeft{height:72px;padding:0 22px;border-radius:22px;font-size:17px}
 .tdots{display:flex;gap:6px;margin:8px 0 14px}
 .tdots i{flex:1;height:5px;border-radius:3px;background:var(--line)} .tdots i.on{background:var(--accent)} .tdots i.done{background:var(--accent);opacity:.45}
 .tsteps{list-style:none;margin:0;padding:0}
@@ -331,7 +332,7 @@ const T = {
  hu: {
   tabs:["Főoldal","Fejlődés","Edzés","Profil"],
   tIntroT:"Találd meg a kezdő szintedet", tIntro:["Mind a hat gyakorlatnál az 1. lépéstől haladsz felfelé.","Minden lépésből végezz egy sorozatot tökéletes technikával, amennyit csak tudsz, és írd be.","Ha eléred a továbblépési célt, jön a következő lépés. Ha nem, ott kezdesz.","Pihenj 1–2 percet a próbák között."],
-  tBook:"A könyv azt ajánlja, hogy mindenki az 1. lépéssel kezdjen – a teszt csak gyorsítja ezt.", tStart:"Teszt indítása", tSkipAll:"Mind 1. lépéstől",
+  tBook:"A könyv azt ajánlja, hogy mindenki az 1. lépéssel kezdjen – a teszt csak gyorsítja ezt.", tStart:"Teszt indítása", tSkipAll:"Teszt kihagyása",
   tDo:"Egy sorozat, tökéletes technikával – amennyi megy.", tTarget:"Továbblépés", tMin:"Kezdő szint", tCant:"Nem megy", tNext:"Rögzítés", tStop:"Itt kezdek",
   tDoneT:"A kezdő lépéseid", tRetake:"Újra", tGo:"Kezdjük az edzést", retest:"Szintfelmérő teszt", bodyWeight:"Testsúly", legDone:"Edzettél", legMiss:"Kimaradt", legPlan:"Tervezett",
   mv:{push:"Fekvőtámasz",squat:"Guggolás",pull:"Húzódzkodás",leg:"Lábemelés",bridge:"Híd",hspu:"Kézenállás"},
@@ -367,7 +368,7 @@ const T = {
  en: {
   tabs:["Home","Progress","Workout","Profile"],
   tIntroT:"Find your starting level", tIntro:["For each of the six movements you work up from step 1.","On each step, do one set with perfect form – as many as you can – and enter it.","Beat the move-on target and you try the next step. Otherwise, that's where you start.","Rest 1–2 minutes between tries."],
-  tBook:"The book recommends everyone starts at step 1 – the test just speeds that up.", tStart:"Start the test", tSkipAll:"All at step 1",
+  tBook:"The book recommends everyone starts at step 1 – the test just speeds that up.", tStart:"Start the test", tSkipAll:"Skip test",
   tDo:"One set with perfect form – as many as you can.", tTarget:"Move on at", tMin:"Beginner", tCant:"Can't do it", tNext:"Save result", tStop:"Start here",
   tDoneT:"Your starting steps", tRetake:"Retake", tGo:"Start training", retest:"Retake level test", bodyWeight:"Body weight", legDone:"Trained", legMiss:"Missed", legPlan:"Planned",
   mv:{push:"Push-up",squat:"Squat",pull:"Pull-up",leg:"Leg raise",bridge:"Bridge",hspu:"Handstand"},
