@@ -174,14 +174,19 @@ nav.hide{display:none}
 .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 /* home */
 #s-home .top{display:flex;flex-direction:column;overflow:hidden;padding-bottom:4px}
-#s-home .bottom{padding-top:8px}
-.cal{flex:1;min-height:0;display:flex;flex-direction:column;background:var(--card);border-radius:18px;padding:10px 10px 8px}
+#s-home .bars{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:flex-end;margin-top:12px;padding:0;background:none}
+#s-home .bars-in{background:var(--card);border-radius:16px;padding:0 10px;display:flex;flex-direction:column;flex:1;max-height:330px}
+#s-home .bar{flex:1;height:auto;min-height:30px;max-height:55px}
+#s-home .bar .bav{width:auto;height:calc(100% - 10px);max-height:42px;min-height:24px;aspect-ratio:1}
+#s-home .bar .bav svg{width:92%;height:92%}
+#s-home .bar+.bar{box-shadow:inset 50px 0 0 var(--card),inset 0 1px 0 var(--line)}
+.cal{flex:none;display:flex;flex-direction:column;background:var(--card);border-radius:18px;padding:10px 10px 8px}
 .calhead{flex:none;display:flex;align-items:center;justify-content:space-between;margin:0 2px 6px}
 .calhead b{font-size:17px}
 .calhead button{width:36px;height:36px;border-radius:12px;background:var(--bg);font-size:20px}
-.calgrid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(7,1fr);gap:3px 2px;text-align:center;align-items:center;justify-items:center}
+.calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px 2px;text-align:center;align-items:center;justify-items:center}
 .calgrid .wd{font-size:12px;color:var(--mute);font-weight:600;padding-bottom:2px}
-.cd{height:100%;max-height:44px;aspect-ratio:1;max-width:100%;display:grid;place-items:center;border-radius:50%;font-size:15px;font-weight:600}
+.cd{width:34px;height:34px;display:grid;place-items:center;border-radius:50%;font-size:15px;font-weight:600}
 .cd.plan{box-shadow:inset 0 0 0 2px var(--accent)}
 .cd.done{background:var(--cal-ok);color:#fff}
 .cd.miss{background:var(--cal-miss);color:#fff}
@@ -208,6 +213,7 @@ nav.hide{display:none}
 .bar .segs i.on{background:var(--accent)}
 .bar small{width:34px;flex:none;text-align:right;font-size:13px;color:var(--mute);font-weight:600}
 @media (max-height:720px){ .bar{height:28px} .bar .segs i{height:12px} #s-home .top{padding-top:12px} .calhead button{width:32px;height:32px} }
+@media (max-height:640px){ .cd{width:28px;height:28px;font-size:14px} .calgrid{gap:2px} }
 @media (max-height:600px){ .bar{height:24px} .bar .segs i{height:10px} .legend{display:none} }
 /* sheet */
 .sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-end;z-index:9}
@@ -223,9 +229,7 @@ nav.hide{display:none}
   <section class="screen on" id="s-home">
     <div class="top">
       <div class="cal" id="cal"></div>
-    </div>
-    <div class="bottom">
-      <div class="bars" id="bars"></div>
+      <div class="bars"><div class="bars-in" id="bars"></div></div>
     </div>
   </section>
 
@@ -801,7 +805,10 @@ function tierPills(mv){
   return `<div class="tiers">${st.goals.map((g,i)=>`<span class="tier ${cls[i]} ${i<=bt?"met":""}">${t().tierShort[i]} ${fmtGoal(st,g)}</span>`).join("")}</div>`;
 }
 // list-row building blocks shared by every tab
-const figAv = (mv, n, cls = "lav") => { const g = GUIDES[mv][n-1]; return `<span class="${cls}"><svg viewBox="${guideBox(g)}">${figureSVG(g, 0)}</svg></span>`; };
+// avatar pose: the most recognisable moment of each movement (start for push-ups and handstands,
+// the bottom of the squat, chin over the bar, legs raised, hips up)
+const AV_T = {push:0, squat:1, pull:1, leg:1, bridge:1, hspu:0};
+const figAv = (mv, n, cls = "lav") => { const g = GUIDES[mv][n-1]; return `<span class="${cls}"><svg viewBox="${guideBox(g)}">${figureSVG(g, g.b ? AV_T[mv] : 0)}</svg></span>`; };
 const lrow = ({av, title, sub, right = "", attrs = "", cls = ""}) =>
   `<div class="lrow2 ${cls}" ${attrs}>${av}<span class="ltx"><b>${title}</b>${sub ? `<small>${sub}</small>` : ""}</span>${right}</div>`;
 function relDay(ts){
@@ -1060,7 +1067,7 @@ function renderProgram(){
   // current steps: the movement's figure as the avatar, step name underneath, compact stepper
   h += `<div class="lh">${t().yourSteps}</div><div class="lgroup">` + MV.map(m => {
     const n = db.steps[m], g = GUIDES[m][n-1];
-    return `<div class="lrow2" style="cursor:default"><span class="lav"><svg viewBox="${guideBox(g)}">${figureSVG(g, 0)}</svg></span>
+    return `<div class="lrow2" style="cursor:default">${figAv(m, n)}
       <span class="ltx"><b>${esc(mvName(m))}</b><small>${t().stepOf(n)} · ${esc(sName(m,n))}</small></span>
       <span class="lstep"><button data-st="${m}" data-d="-1" aria-label="−">−</button><span>${n}</span><button data-st="${m}" data-d="1" aria-label="+">+</button></span></div>`;
   }).join("") + `</div>`;
@@ -1154,7 +1161,7 @@ function renderHome(){
   }
   const title = first.toLocaleDateString(db.lang, {month:"long", year:"numeric"});
   $("#cal").innerHTML = `<div class="calhead"><button id="calPrev" aria-label="‹">‹</button><b>${title.replace(/^./, c => c.toUpperCase())}</b><button id="calNext" aria-label="›">›</button></div>
-    <div class="calgrid" style="grid-template-rows:auto repeat(${Math.ceil((lead+days)/7)},minmax(0,1fr))">${g}</div>
+    <div class="calgrid">${g}</div>
     <div class="legend"><span><i style="background:var(--cal-ok)"></i>${t().legDone}</span><span><i style="background:var(--cal-miss)"></i>${t().legMiss}</span><span><i style="box-shadow:inset 0 0 0 2px var(--accent)"></i>${t().legPlan}</span></div>`;
   $("#calPrev").onclick = () => { calOff--; renderHome(); };
   $("#calNext").onclick = () => { calOff++; renderHome(); };
