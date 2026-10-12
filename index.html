@@ -123,6 +123,38 @@ nav.hide{display:none}
 .srow .sinfo small{display:block;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .srow button{width:48px;height:48px;border-radius:12px;background:var(--line);font-size:22px;font-weight:700}
 .srow .snum{width:28px;text-align:center;font-weight:800;font-size:18px}
+.qa{display:flex;justify-content:space-between;margin:4px 4px 22px}
+.qa button{display:flex;flex-direction:column;align-items:center;gap:8px;width:76px;font-size:13px;color:var(--mute)}
+.qa button span{width:62px;height:62px;border-radius:50%;background:var(--card);display:grid;place-items:center;color:var(--ink)}
+.qa svg{width:26px;height:26px}
+.lh{font-size:22px;font-weight:800;margin:6px 0 10px}
+.lgroup{background:var(--card);border-radius:18px;overflow:hidden;margin-bottom:22px}
+.lrow2{display:flex;align-items:center;gap:12px;width:100%;min-height:68px;padding:10px 12px 10px 14px;text-align:left;position:relative;cursor:pointer}
+.lrow2+.lrow2,.lrow2+.pdet2+.lrow2,.pdet2+.lrow2{box-shadow:inset 70px 0 0 var(--card),inset 0 1px 0 var(--line)}
+.lav{width:46px;height:46px;border-radius:50%;flex:none;display:grid;place-items:center;background:var(--bg);overflow:hidden}
+.lav.num{background:var(--accent);color:var(--on-accent);font-weight:800;font-size:19px}
+.lav svg{width:44px;height:44px}
+.ltx{flex:1;min-width:0}
+.ltx b{display:block;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ltx small{display:block;color:var(--mute);font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lrow2.on .ltx b{color:var(--accent)}
+.lchk{width:24px;height:24px;border-radius:50%;border:2px solid var(--line);flex:none;display:grid;place-items:center}
+.lrow2.on .lchk{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.lrow2 .info{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:var(--ink);flex:none}
+.lrow2 .info svg{width:24px;height:24px}
+.lrow2 .info[aria-expanded="true"]{color:var(--accent)}
+.lstep{display:flex;align-items:center;gap:4px;flex:none}
+.lstep button{width:40px;height:40px;border-radius:50%;background:var(--bg);font-size:20px;font-weight:700}
+.lstep span{width:26px;text-align:center;font-weight:800;font-size:17px}
+.pdet2{padding:0 14px 14px 72px;font-size:14px}
+.pdet2 table{border-collapse:collapse;width:100%;margin-bottom:8px}
+.pdet2 td{padding:3px 0;vertical-align:top}
+.pdet2 td:first-child{width:92px;color:var(--mute)}
+.pdet2 td.off{color:var(--mute)}
+.pdet2 p{margin:0 0 8px;color:var(--ink)}
+.pdet2 ul{margin:0;padding-left:18px;color:var(--mute)}
+.pdet2 li{margin:3px 0}
+.ldanger{width:100%;min-height:56px;color:#e11d48;font-weight:600;font-size:17px}
 .section{font-size:13px;font-weight:700;color:var(--mute);text-transform:uppercase;letter-spacing:.06em;margin:20px 0 8px}
 .btnrow{display:flex;gap:8px;flex-wrap:wrap}
 .small{height:48px;padding:0 16px;border-radius:12px;background:var(--card);font-weight:600}
@@ -347,6 +379,8 @@ const T = {
     veteran:["Néhány hónap edzés után ajánlott.","Egy edzés akár 6–7 perc alatt megvan.","Felsőtest és alsótest sosem jön két egymást követő napon, így könnyű a regeneráció.","Iktass be pihenőnapot, amikor kell – a heti egy szünnap viszont kötelező."],
     solitary:["Háromnapos ciklus, hetente kétszer.","Csak kiváló regenerációval és legalább egy év kemény edzés után.","Kiegészítő munka: fogás (H, Cs), vádli (K, P), nyak (Sze, Szo) – ezeket az app nem követi.","Ne csináld egész évben folyamatosan."],
     supermax:["Volumenedzés állóképességre – erőt nem ad.","Kezdj gyakorlatonként 10 × 10 ismétléssel, a cél napi 50 sorozat gyakorlatonként.","A sorozatokat elosztathatod a napon belül miniedzésekre.","Csak ha a tíz lépésen már túl vagy, és évek óta keményen edzel."]},
+  progShort:{fresh:"Heti 2 nap · kezdőknek",good:"Heti 3 nap · mindenkinek",veteran:"Heti 6 nap · napi 1",solitary:"Heti 6 nap · haladóknak",supermax:"Volumen · élsport"},
+  qaTest:"Szintteszt", qaLang:"English", qaExport:"Mentés", qaImport:"Betöltés",
   progDesc:{fresh:"Heti 2 nap, 4 gyakorlat. Kezdőknek – amíg mind a négynél el nem hagyod a 6. lépést.",
     good:"Heti 3 nap, mind a hat gyakorlat. A legjobb alapprogram szinte mindenkinek.",
     veteran:"Heti 6 nap, napi egy gyakorlat. Pár hónap edzés után.",
@@ -383,6 +417,8 @@ const T = {
     veteran:["Recommended after a few months of training.","A session can take just 6–7 minutes.","Upper and lower body never land on back-to-back days, so recovery is easy.","Add rest days whenever you need them – but keep one full rest day a week."],
     solitary:["A three-day cycle, run twice a week.","Only with excellent recovery and at least a year of hard training.","Extra work: grip (Mon, Thu), calves (Tue, Fri), neck (Wed, Sat) – the app doesn't track these.","Don't run it continuously all year."],
     supermax:["Volume training for endurance – it won't build strength.","Start with 10 sets of 10 per movement and build towards 50 sets per movement a day.","Spread the sets through the day as mini-sessions.","Only once you're past the ten steps and have trained hard for years."]},
+  progShort:{fresh:"2 days/week · beginners",good:"3 days/week · all levels",veteran:"6 days/week · 1 a day",solitary:"6 days/week · advanced",supermax:"Volume · elite"},
+  qaTest:"Level test", qaLang:"Magyar", qaExport:"Export", qaImport:"Import",
   progDesc:{fresh:"2 days a week, 4 movements. For beginners, until you pass step 6 on all four.",
     good:"3 days a week, all six movements. The best base program for almost anyone.",
     veteran:"6 days a week, one movement a day. After a few months of training.",
@@ -969,28 +1005,36 @@ function chart(pts, st){
 const progOpen = new Set(); // program cards with details expanded
 function renderProgram(){
   const P = PROGRAMS[db.program];
+  const ic = d => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+  const infoIcon = ic('<circle cx="12" cy="12" r="9.5"/><path d="M12 11v6"/><circle cx="12" cy="7.5" r="1.2" fill="currentColor" stroke="none"/>');
   let h = `<div class="stats" id="bwStats"></div><div class="chart" id="bwChart"></div>`;
-  h += `<div class="section" style="margin-top:4px">${t().program} · ${t().setsPerMv}: ${P.sets}</div>`;
-  h += Object.keys(PROGRAMS).map(k => {
-    const open = progOpen.has(k), days = PROGRAMS[k].days;
-    const det = open ? `<div class="pdet"><table>${[1,2,3,4,5,6,0].map(d => days[d]
+  // quick actions, like the round buttons at the top of a phone's call list
+  h += `<div class="qa">
+    <button id="testBtn"><span>${ic('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/>')}</span>${t().qaTest}</button>
+    <button id="langBtn"><span>${ic('<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.6 2.6 15.4 0 18M12 3c-2.6 2.6-2.6 15.4 0 18"/>')}</span>${t().qaLang}</button>
+    <button id="exportBtn"><span>${ic('<path d="M12 15V3M7 8l5-5 5 5M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/>')}</span>${t().qaExport}</button>
+    <button id="importBtn"><span>${ic('<path d="M12 3v12M7 10l5 5 5-5M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/>')}</span>${t().qaImport}</button></div>`;
+  // programs: one row each — days-per-week badge, name, one-line summary, selected check, info
+  h += `<div class="lh">${t().program}</div><div class="lgroup">` + Object.keys(PROGRAMS).map(k => {
+    const open = progOpen.has(k), days = PROGRAMS[k].days, on = k === db.program;
+    const det = open ? `<div class="pdet2"><p>${esc(t().progDesc[k])}</p><table>${[1,2,3,4,5,6,0].map(d => days[d]
         ? `<tr><td>${t().dayNames[d]}</td><td>${days[d].map(m => esc(mvName(m,true))).join(", ")}</td></tr>`
         : `<tr><td>${t().dayNames[d]}</td><td class="off">${t().rest}</td></tr>`).join("")}</table>
-      <ul><li>${t().setsPerMv}: ${PROGRAMS[k].sets}</li>${t().progNotes[k].map(n => `<li>${esc(n)}</li>`).join("")}</ul></div>` : "";
-    return `<div class="opt-card ${k===db.program?"on":""}" data-p="${k}" role="button" tabindex="0" aria-pressed="${k===db.program}">
-      <b>${t().prog[k]}</b><small>${t().progDesc[k]}</small>
-      <button class="info" data-info="${k}" aria-label="Info" aria-expanded="${open}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v6"/><circle cx="12" cy="7.5" r="1.2" fill="currentColor" stroke="none"/></svg></button>${det}</div>`;
-  }).join("");
-  if (db.program === "solitary") h += `<p class="hint">${t().extras}</p>`;
-  h += `<div class="section row"><span>${t().yourSteps}</span><button class="tskip" id="testBtn">${t().retest}</button></div>`;
-  h += MV.map(m => `<div class="srow"><div class="sinfo"><b>${esc(mvName(m,true))}</b><small>${esc(sName(m,db.steps[m]))}</small></div>
-      <button data-st="${m}" data-d="-1" aria-label="−">−</button><span class="snum">${db.steps[m]}</span><button data-st="${m}" data-d="1" aria-label="+">+</button></div>`).join("");
-  h += `<div class="section">${t().language}</div><div class="btnrow">
-      <button class="small" data-l="hu" style="${db.lang==="hu"?"outline:2px solid var(--accent)":""}">Magyar</button>
-      <button class="small" data-l="en" style="${db.lang==="en"?"outline:2px solid var(--accent)":""}">English</button></div>`;
-  h += `<div class="section">${t().data}</div><div class="btnrow">
-      <button class="small" id="exportBtn">${t().export}</button><button class="small" id="importBtn">${t().import}</button>
-      <button class="small" id="resetBtn" style="color:#e11d48">${t().reset}</button></div>`;
+      <ul><li>${t().setsPerMv}: ${PROGRAMS[k].sets}</li>${t().progNotes[k].map(n => `<li>${esc(n)}</li>`).join("")}${k === "solitary" ? `<li>${t().extras}</li>` : ""}</ul></div>` : "";
+    return `<div class="lrow2 ${on ? "on" : ""}" data-p="${k}" role="button" tabindex="0" aria-pressed="${on}">
+      <span class="lav num">${Object.keys(days).length}</span>
+      <span class="ltx"><b>${t().prog[k]}</b><small>${t().progShort[k]}</small></span>
+      <span class="lchk">${on ? "✓" : ""}</span>
+      <button class="info" data-info="${k}" aria-label="Info" aria-expanded="${open}">${infoIcon}</button></div>${det}`;
+  }).join("") + `</div>`;
+  // current steps: the movement's figure as the avatar, step name underneath, compact stepper
+  h += `<div class="lh">${t().yourSteps}</div><div class="lgroup">` + MV.map(m => {
+    const n = db.steps[m], g = GUIDES[m][n-1];
+    return `<div class="lrow2" style="cursor:default"><span class="lav"><svg viewBox="${guideBox(g)}">${figureSVG(g, 0)}</svg></span>
+      <span class="ltx"><b>${esc(mvName(m))}</b><small>${t().stepOf(n)} · ${esc(sName(m,n))}</small></span>
+      <span class="lstep"><button data-st="${m}" data-d="-1" aria-label="−">−</button><span>${n}</span><button data-st="${m}" data-d="1" aria-label="+">+</button></span></div>`;
+  }).join("") + `</div>`;
+  h += `<div class="lgroup"><button class="ldanger" id="resetBtn">${t().reset}</button></div>`;
   $("#programTop").innerHTML = h;
   renderWeightHistory();
   $("#wLabel").textContent = t().bodyWeight;
@@ -1003,7 +1047,7 @@ function renderProgram(){
   document.querySelectorAll("[data-st]").forEach(b => b.onclick = () => {
     const m = b.dataset.st; db.steps[m] = Math.min(10, Math.max(1, db.steps[m] + Number(b.dataset.d))); save(); buzz(8); renderProgram();
   });
-  document.querySelectorAll("[data-l]").forEach(b => b.onclick = () => { db.lang = b.dataset.l; save(); labelTabs(); renderProgram(); });
+  $("#langBtn").onclick = () => { db.lang = db.lang === "en" ? "hu" : "en"; save(); labelTabs(); renderProgram(); };
   $("#exportBtn").onclick = exportData;
   $("#testBtn").onclick = startTest;
   $("#importBtn").onclick = () => $("#importFile").click();
