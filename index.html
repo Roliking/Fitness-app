@@ -35,6 +35,8 @@ h3{margin:4px 0 10px}
 .guide small{display:block;margin-top:6px;color:var(--mute);font-size:12px}
 .guide.lg{flex-direction:column;align-items:stretch;padding:12px;background:var(--bg)}
 .guide.lg svg{width:100%;height:auto;max-height:240px}
+#activeTop .guide.lg{background:var(--card);padding:10px 14px 12px}
+#activeTop .guide.lg svg{height:190px;max-height:none}
 .fa{fill:url(#figNear);stroke:#7a3300;stroke-width:.7;stroke-linejoin:round}
 .fa.far{fill:url(#figFar)}
 .fl{fill:none;stroke:#a84a00;stroke-width:.55;stroke-linecap:round;opacity:.75}
@@ -497,7 +499,7 @@ const GUIDES = {
    en:"Body rigid from heels to head. Lower until your chest is a fist from the floor.", hu:"Test feszes saroktól fejig. Engedd le, amíg a mellkasod egy ökölnyire van a földtől."},
   {v:"f", pf:1, a:FPS(43.5,{WL:[47,66],WR:[53,66]}), b:FPS(57,{WL:[47,66],WR:[53,66]}),
    en:"Hands together under your chest, index fingers touching. Full range, elbows close.", hu:"Kezek összeérnek a mellkas alatt. Teljes mozgástartomány, könyök közel."},
-  {v:"f", pf:1, a:FPS(42,{WL:[38,66],WR:[63,54.6]}), b:FPS(56,{WL:[38,66],WR:[63,54.6]}), props:[["ball",63,60.6,6]],
+  {v:"f", pf:1, a:FPS(42,{WL:[38,66],WR:[63,54.6]}), b:FPS(53.5,{WL:[38,66],WR:[63,54.6]}), props:[["ball",63,60.6,6]],
    en:"One hand on the floor, the other on a basketball. Go all the way down; switch sides.", hu:"Egyik kéz a földön, a másik kosárlabdán. Menj le teljesen; cserélj oldalt."},
   {v:"f", pf:1, a:FPS(43.5,{WL:null,WR:[53,66],FL:[39,62],FR:[61,62]}), b:FPS(50,{WL:null,WR:[53,66],FL:[39,61.5],FR:[61,61.5]}), props:[["ball",50,62,4.6]],
    en:"Feet wide, one hand under the chest, the other behind your back. Lower halfway.", hu:"Láb terpeszben, egyik kéz a mellkas alatt, a másik a hátadon. Félig engedd le."},
@@ -1052,7 +1054,7 @@ function renderActive(){
     <div class="mvname">${esc(mvName(mv,true))}${W.mvs.length>1?` · ${W.mi+1}/${W.mvs.length}`:""}</div>
     <h2 class="exname">${t().stepOf(n)}: ${esc(sName(mv,n))}</h2>
     <div class="goal">${t().goal}: ${st.goals.map((g,i)=>`${t().tiers[i]} ${fmtGoal(st,g)}`).join(" · ")}${st.side?` (${t().eachSide})`:""}</div>
-    ${guideHTML(mv, cur ? cur.step : n, false, cur && cur.step !== n ? `${t().warm}: ${esc(sName(mv, cur.step))}` : "")}
+    ${guideHTML(mv, cur ? cur.step : n, true, cur && cur.step !== n ? `${t().warm}: ${esc(sName(mv, cur.step))}` : "")}
     <ul class="queue">${rows}</ul>
     ${last ? `<p class="hint">${t().last}: ${last.map(v=>fmtVal(st,v)).join(", ")}</p>` : ""}
     <p class="hint" id="restLine"></p>`;
