@@ -808,6 +808,8 @@ function tierPills(mv){
 // avatar pose: the most recognisable moment of each movement (start for push-ups and handstands,
 // the bottom of the squat, chin over the bar, legs raised, hips up)
 const AV_T = {push:0, squat:1, pull:1, leg:1, bridge:1, hspu:0};
+// the movement icon is always its step 5 figure, whatever step the user is on
+const mvIcon = (mv, cls) => figAv(mv, 5, cls);
 const figAv = (mv, n, cls = "lav") => { const g = GUIDES[mv][n-1]; return `<span class="${cls}"><svg viewBox="${guideBox(g)}">${figureSVG(g, g.b ? AV_T[mv] : 0)}</svg></span>`; };
 const lrow = ({av, title, sub, right = "", attrs = "", cls = ""}) =>
   `<div class="lrow2 ${cls}" ${attrs}>${av}<span class="ltx"><b>${title}</b>${sub ? `<small>${sub}</small>` : ""}</span>${right}</div>`;
@@ -821,7 +823,7 @@ function relDay(ts){
 function mvCard(mv){
   const n = db.steps[mv];
   const st = step(mv, n), next = Math.min(2, bestTier(mv, n) + 1);
-  return lrow({av: figAv(mv, n), title: esc(mvName(mv, true)), sub: `${t().stepOf(n)} · ${esc(sName(mv, n))}`, attrs: `data-guide="${mv}"`,
+  return lrow({av: mvIcon(mv), title: esc(mvName(mv, true)), sub: `${t().stepOf(n)} · ${esc(sName(mv, n))}`, attrs: `data-guide="${mv}"`,
     right: `<span class="lmeta">${t().tierShort[next]} ${fmtGoal(st, st.goals[next])}</span><button class="lplay" data-mv="${mv}" aria-label="${esc(mvName(mv))}">▶</button>`});
 }
 function renderToday(){
@@ -851,7 +853,7 @@ function showGuide(mv){
   startGuides();
 }
 function pickFree(){
-  openSheet(`<h3>${t().pickMv}</h3><div class="lgroup">` + MV.map(m => lrow({av: figAv(m, db.steps[m]), title: esc(mvName(m,true)), sub: `${t().stepOf(db.steps[m])} · ${esc(sName(m, db.steps[m]))}`, attrs: `data-a="${m}"`, right: `<span class="lmeta">›</span>`})).join("") + `</div>`,
+  openSheet(`<h3>${t().pickMv}</h3><div class="lgroup">` + MV.map(m => lrow({av: mvIcon(m), title: esc(mvName(m,true)), sub: `${t().stepOf(db.steps[m])} · ${esc(sName(m, db.steps[m]))}`, attrs: `data-a="${m}"`, right: `<span class="lmeta">›</span>`})).join("") + `</div>`,
     a => startWorkout([a]));
 }
 
@@ -1067,7 +1069,7 @@ function renderProgram(){
   // current steps: the movement's figure as the avatar, step name underneath, compact stepper
   h += `<div class="lh">${t().yourSteps}</div><div class="lgroup">` + MV.map(m => {
     const n = db.steps[m], g = GUIDES[m][n-1];
-    return `<div class="lrow2" style="cursor:default">${figAv(m, n)}
+    return `<div class="lrow2" style="cursor:default">${mvIcon(m)}
       <span class="ltx"><b>${esc(mvName(m))}</b><small>${t().stepOf(n)} · ${esc(sName(m,n))}</small></span>
       <span class="lstep"><button data-st="${m}" data-d="-1" aria-label="−">−</button><span>${n}</span><button data-st="${m}" data-d="1" aria-label="+">+</button></span></div>`;
   }).join("") + `</div>`;
@@ -1168,7 +1170,7 @@ function renderHome(){
   $("#bars").innerHTML = MV.map(m => {
     // 10-step "stoplight": steps already passed are filled, the rest are outlined
     const n = db.steps[m];
-    return `<button class="bar" data-m="${m}" aria-label="${esc(mvName(m))} ${n}/10">${figAv(m, n, "bav")}<span class="bname">${esc(mvName(m))}</span><span class="segs">${Array.from({length:10},(_,i)=>`<i class="${i<n-1?"on":""}"></i>`).join("")}</span><small>${n}/10</small></button>`;
+    return `<button class="bar" data-m="${m}" aria-label="${esc(mvName(m))} ${n}/10">${mvIcon(m, "bav")}<span class="bname">${esc(mvName(m))}</span><span class="segs">${Array.from({length:10},(_,i)=>`<i class="${i<n-1?"on":""}"></i>`).join("")}</span><small>${n}/10</small></button>`;
   }).join("");
   document.querySelectorAll("#bars .bar").forEach(b => b.onclick = () => { pgMv = b.dataset.m; buzz(8); show("progress"); renderProgress(); });
 }
@@ -1186,7 +1188,7 @@ function renderTest(){
     stp.style.display = "none"; L.textContent = t().tSkipAll; R.textContent = t().tStart; return;
   }
   if (TT.phase === "done") {
-    top.innerHTML = `<h1>${t().tDoneT}</h1><div class="lgroup">${MV.map(m => lrow({av: figAv(m, TT.res[m]), title: esc(mvName(m,true)), sub: `${t().stepOf(TT.res[m])} · ${esc(sName(m, TT.res[m]))}`, attrs: 'style="cursor:default"'})).join("")}</div>`;
+    top.innerHTML = `<h1>${t().tDoneT}</h1><div class="lgroup">${MV.map(m => lrow({av: mvIcon(m), title: esc(mvName(m,true)), sub: `${t().stepOf(TT.res[m])} · ${esc(sName(m, TT.res[m]))}`, attrs: 'style="cursor:default"'})).join("")}</div>`;
     stp.style.display = "none"; L.textContent = t().tRetake; R.textContent = t().tGo; return;
   }
   const mv = MV[TT.mi], n = TT.n, st = step(mv, n), unit = st.sec ? t().secs : t().reps, side = st.side ? ` (${t().eachSide})` : "";
