@@ -60,9 +60,11 @@ nav.hide{display:none}
 .mvname{font-size:14px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.06em}
 .exname{font-size:26px;font-weight:800;margin:2px 0 4px}
 .goal{color:var(--mute);font-size:14px;margin-bottom:12px}
-.queue{list-style:none;margin:0 0 10px;padding:0}
-.queue li{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:var(--card);border-radius:12px;margin-bottom:8px;font-size:17px;border:2px solid transparent}
-.queue li.cur{border-color:var(--accent)}
+.queue{list-style:none;margin:0 0 10px;padding:0;background:var(--card);border-radius:18px;overflow:hidden}
+.queue li{display:flex;justify-content:space-between;align-items:center;min-height:52px;padding:10px 14px;font-size:17px}
+.queue li+li{box-shadow:inset 0 1px 0 var(--line)}
+.queue li.cur{box-shadow:inset 4px 0 0 var(--accent);font-weight:700}
+.queue li.cur+li{box-shadow:inset 0 1px 0 var(--line)}
 .queue li.done{opacity:.6}
 .queue li span{color:var(--mute);font-size:15px}
 .queue li.done span{color:var(--ink)}
@@ -140,6 +142,11 @@ nav.hide{display:none}
 .lrow2.on .ltx b{color:var(--accent)}
 .lchk{width:24px;height:24px;border-radius:50%;border:2px solid var(--line);flex:none;display:grid;place-items:center}
 .lrow2.on .lchk{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.lmeta{color:var(--mute);font-size:14px;flex:none;text-align:right}
+.lplay{width:44px;height:44px;border-radius:50%;background:var(--accent);color:var(--on-accent);font-size:17px;flex:none}
+.lempty{padding:18px 14px;color:var(--mute);text-align:center}
+.sheet .lgroup{background:var(--bg);margin-bottom:6px}
+.sheet .lgroup .lrow2+.lrow2{box-shadow:inset 70px 0 0 var(--bg),inset 0 1px 0 var(--line)}
 .lrow2 .info{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:var(--ink);flex:none}
 .lrow2 .info svg{width:24px;height:24px}
 .lrow2 .info[aria-expanded="true"]{color:var(--accent)}
@@ -190,9 +197,12 @@ nav.hide{display:none}
 .wbar .wu{margin:0 8px 0 6px;font-weight:700;color:var(--mute)}
 .wbar .wok{width:44px;height:44px;border-radius:12px;background:var(--accent);color:var(--on-accent);font-size:20px;font-weight:800;visibility:hidden}
 .wbar.has .wok{visibility:visible}
-.bars{background:var(--card);border-radius:16px;padding:4px 10px}
-.bar{display:flex;align-items:center;gap:10px;width:100%;height:34px;text-align:left}
-.bar > span:first-child{width:84px;flex:none;font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bars{background:var(--card);border-radius:16px;padding:0 10px}
+.bar{display:flex;align-items:center;gap:8px;width:100%;height:36px;text-align:left}
+.bar+.bar{box-shadow:inset 38px 0 0 var(--card),inset 0 1px 0 var(--line)}
+.bar .bav{width:28px;height:28px;border-radius:50%;background:var(--bg);flex:none;display:grid;place-items:center;overflow:hidden}
+.bar .bav svg{width:27px;height:27px}
+.bar > .bname{width:78px;flex:none;font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bar .segs{flex:1;display:grid;grid-template-columns:repeat(10,1fr);gap:4px}
 .bar .segs i{height:14px;border-radius:4px;border:1.5px solid var(--accent)}
 .bar .segs i.on{background:var(--accent)}
@@ -251,6 +261,7 @@ nav.hide{display:none}
   <section class="screen" id="s-progress">
     <div class="top">
       <div class="chart" id="pgChart"></div>
+      <div id="pgRecent"></div>
     </div>
     <div class="bottom"><div class="mvsw"><button id="pgPrev" aria-label="‹">‹</button><div class="mvsw-c"><b id="pgName"></b><small id="pgStep"></small></div><button id="pgNext" aria-label="›">›</button></div></div>
   </section>
@@ -396,7 +407,7 @@ const T = {
   endQ:"Befejezed az edzést?", saveEnd:"Mentés és befejezés", discard:"Elvetés", keep:"Folytatom",
   levelUp:(n)=>`Haladó szint teljesítve! Jöhet a ${n}. lépés?`, goUp:"Igen, továbblépek", stay:"Még maradok",
   stepBack:"Nem lett meg a kezdő szint. A könyv szerint lépj vissza egyet, és tökéletesítsd a technikát.", goBack:"Visszalépek", master:"Mesterlépés teljesítve! 🏆",
-  noData:"Még nincs adat ezen a lépésen.", bestSet:"Legjobb sorozat edzésenként", change:"Változás",
+  noData:"Még nincs adat ezen a lépésen.", recent:"Legutóbbiak", noSessions:"Még nincs rögzített edzés.", today:"Ma", yesterday:"Tegnap", nSets:n=>`${n} sorozat`, bestSet:"Legjobb sorozat edzésenként", change:"Változás",
   program:"Program", yourSteps:"Jelenlegi lépések", language:"Nyelv", data:"Adatok", export:"Exportálás", import:"Importálás", reset:"Minden törlése", resetQ:"Biztosan törlöd az összes adatot?",
   body:"Test", save:"Mentés", min:"Min", max:"Max", pickMv:"Melyik gyakorlat?",
   setsPerMv:"Edző sorozatok", days:["V","H","K","Sze","Cs","P","Szo"], dayNames:["vasárnap","hétfő","kedd","szerda","csütörtök","péntek","szombat"],
@@ -434,7 +445,7 @@ const T = {
   endQ:"End workout?", saveEnd:"Save & finish", discard:"Discard", keep:"Keep going",
   levelUp:(n)=>`Progression standard hit! Move to step ${n}?`, goUp:"Yes, step up", stay:"Not yet",
   stepBack:"You missed the beginner standard. The book says step back one and perfect your form.", goBack:"Step back", master:"Master step complete! 🏆",
-  noData:"No data at this step yet.", bestSet:"Best set per workout", change:"Change",
+  noData:"No data at this step yet.", recent:"Recent", noSessions:"No workouts logged yet.", today:"Today", yesterday:"Yesterday", nSets:n=>`${n} set${n>1?"s":""}`, bestSet:"Best set per workout", change:"Change",
   program:"Program", yourSteps:"Current steps", language:"Language", data:"Data", export:"Export", import:"Import", reset:"Erase everything", resetQ:"Erase all data?",
   body:"Body", save:"Save", min:"Min", max:"Max", pickMv:"Which movement?",
   setsPerMv:"Work sets", days:["Su","Mo","Tu","We","Th","Fr","Sa"], dayNames:["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
@@ -789,25 +800,36 @@ function tierPills(mv){
   const n = db.steps[mv], st = step(mv,n), bt = bestTier(mv,n), cls = ["k","m","h"];
   return `<div class="tiers">${st.goals.map((g,i)=>`<span class="tier ${cls[i]} ${i<=bt?"met":""}">${t().tierShort[i]} ${fmtGoal(st,g)}</span>`).join("")}</div>`;
 }
+// list-row building blocks shared by every tab
+const figAv = (mv, n, cls = "lav") => { const g = GUIDES[mv][n-1]; return `<span class="${cls}"><svg viewBox="${guideBox(g)}">${figureSVG(g, 0)}</svg></span>`; };
+const lrow = ({av, title, sub, right = "", attrs = "", cls = ""}) =>
+  `<div class="lrow2 ${cls}" ${attrs}>${av}<span class="ltx"><b>${title}</b>${sub ? `<small>${sub}</small>` : ""}</span>${right}</div>`;
+function relDay(ts){
+  const d0 = x => { const d = new Date(x); return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime(); };
+  const diff = Math.round((d0(Date.now()) - d0(ts)) / 864e5);
+  if (diff === 0) return t().today; if (diff === 1) return t().yesterday;
+  if (diff < 7) return t().dayNames[new Date(ts).getDay()].replace(/^./, c => c.toUpperCase());
+  return new Date(ts).toLocaleDateString(db.lang, {day:"numeric", month:"short"});
+}
 function mvCard(mv){
   const n = db.steps[mv];
-  return `<div class="card"><div class="info" data-guide="${mv}"><div class="name">${esc(mvName(mv,true))}</div>
-    <div class="meta">${t().stepOf(n)} · ${esc(sName(mv,n))}</div>${tierPills(mv)}</div>
-    <button class="play" data-mv="${mv}" aria-label="${esc(mvName(mv))}">▶</button></div>`;
+  const st = step(mv, n), next = Math.min(2, bestTier(mv, n) + 1);
+  return lrow({av: figAv(mv, n), title: esc(mvName(mv, true)), sub: `${t().stepOf(n)} · ${esc(sName(mv, n))}`, attrs: `data-guide="${mv}"`,
+    right: `<span class="lmeta">${t().tierShort[next]} ${fmtGoal(st, st.goals[next])}</span><button class="lplay" data-mv="${mv}" aria-label="${esc(mvName(mv))}">▶</button>`});
 }
 function renderToday(){
   const now = new Date(), P = PROGRAMS[db.program], today = P.days[now.getDay()] || [];
   $("#todayTitle").textContent = t().dayNames[now.getDay()].replace(/^./, c => c.toUpperCase());
   $("#todaySub").textContent = `${t().prog[db.program]} · ${now.toLocaleDateString(db.lang,{day:"numeric",month:"long"})}`;
   let html = "";
-  if (today.length) html = today.map(mvCard).join("");
+  if (today.length) html = `<div class="lgroup">${today.map(mvCard).join("")}</div>`;
   else {
     let k = 1; while (k < 7 && !P.days[(now.getDay()+k)%7]) k++;
     const nd = (now.getDay()+k)%7;
-    html = `<div class="rest"><b>${t().rest}</b><span class="meta">${t().next}: ${t().dayNames[nd]} – ${P.days[nd].map(m=>esc(mvName(m))).join(", ")}</span></div>`;
+    html = `<div class="lgroup">${lrow({av: `<span class="lav num">☾</span>`, title: t().rest, sub: `${t().next}: ${t().dayNames[nd]} – ${P.days[nd].map(m=>esc(mvName(m))).join(", ")}`, attrs: 'style="cursor:default"'})}</div>`;
   }
   $("#todayList").innerHTML = html;
-  document.querySelectorAll("#todayList .play").forEach(b => b.onclick = () => startWorkout([b.dataset.mv]));
+  document.querySelectorAll("#todayList .lplay").forEach(b => b.onclick = e => { e.stopPropagation(); startWorkout([b.dataset.mv]); });
   document.querySelectorAll("#todayList [data-guide]").forEach(el => el.onclick = () => showGuide(el.dataset.guide));
   $("#todayBtns").innerHTML = today.length
     ? `<button class="big ghost" id="freeBtn">${t().free}</button><button class="big" id="goBtn">${t().startToday}</button>`
@@ -822,7 +844,7 @@ function showGuide(mv){
   startGuides();
 }
 function pickFree(){
-  openSheet(`<h3>${t().pickMv}</h3>` + MV.map(m => `<button class="opt" data-a="${m}"><b>${esc(mvName(m,true))}</b> <span style="color:var(--mute)">· ${t().stepOf(db.steps[m])}</span></button>`).join(""),
+  openSheet(`<h3>${t().pickMv}</h3><div class="lgroup">` + MV.map(m => lrow({av: figAv(m, db.steps[m]), title: esc(mvName(m,true)), sub: `${t().stepOf(db.steps[m])} · ${esc(sName(m, db.steps[m]))}`, attrs: `data-a="${m}"`, right: `<span class="lmeta">›</span>`})).join("") + `</div>`,
     a => startWorkout([a]));
 }
 
@@ -979,6 +1001,14 @@ function renderProgress(){
   $("#pgStep").textContent = `${t().stepOf(n)} · ${sName(pgMv,n)}`;
   const pts = history(pgMv,n).map(h => ({x:h.date, y:Math.max(...h.work)}));
   $("#pgChart").innerHTML = `<div class="hint" style="margin:0 0 6px">${t().bestSet}</div>` + chart(pts, st);
+  const recent = [];
+  for (let i = db.sessions.length - 1; i >= 0 && recent.length < 8; i--)
+    db.sessions[i].items.forEach(it => { if (it.mv === pgMv && it.work.length) recent.push({date: db.sessions[i].date, ...it}); });
+  $("#pgRecent").innerHTML = `<div class="lh">${t().recent}</div><div class="lgroup">` + (recent.length ? recent.map(r => {
+    const rs = step(pgMv, r.step);
+    return lrow({av: figAv(pgMv, r.step), title: `${t().stepOf(r.step)} · ${esc(sName(pgMv, r.step))}`, sub: `${t().nSets(r.work.length)} · ${r.work.map(v => fmtVal(rs, v)).join(", ")}`,
+      right: `<span class="lmeta">${relDay(r.date)}</span>`, attrs: 'style="cursor:default"'});
+  }).join("") : `<div class="lempty">${t().noSessions}</div>`) + `</div>`;
 }
 const pgGo = d => { pgMv = MV[(MV.indexOf(pgMv) + d + MV.length) % MV.length]; buzz(8); renderProgress(); };
 $("#pgPrev").onclick = () => pgGo(-1);
@@ -1131,7 +1161,7 @@ function renderHome(){
   $("#bars").innerHTML = MV.map(m => {
     // 10-step "stoplight": steps already passed are filled, the rest are outlined
     const n = db.steps[m];
-    return `<button class="bar" data-m="${m}" aria-label="${esc(mvName(m))} ${n}/10"><span>${esc(mvName(m))}</span><span class="segs">${Array.from({length:10},(_,i)=>`<i class="${i<n-1?"on":""}"></i>`).join("")}</span><small>${n}/10</small></button>`;
+    return `<button class="bar" data-m="${m}" aria-label="${esc(mvName(m))} ${n}/10">${figAv(m, n, "bav")}<span class="bname">${esc(mvName(m))}</span><span class="segs">${Array.from({length:10},(_,i)=>`<i class="${i<n-1?"on":""}"></i>`).join("")}</span><small>${n}/10</small></button>`;
   }).join("");
   document.querySelectorAll("#bars .bar").forEach(b => b.onclick = () => { pgMv = b.dataset.m; buzz(8); show("progress"); renderProgress(); });
 }
@@ -1149,7 +1179,7 @@ function renderTest(){
     stp.style.display = "none"; L.textContent = t().tSkipAll; R.textContent = t().tStart; return;
   }
   if (TT.phase === "done") {
-    top.innerHTML = `<h1>${t().tDoneT}</h1><ul class="tsteps">${MV.map(m => `<li><b>${esc(mvName(m,true))}</b><span>${t().stepOf(TT.res[m])} · ${esc(sName(m, TT.res[m]))}</span></li>`).join("")}</ul>`;
+    top.innerHTML = `<h1>${t().tDoneT}</h1><div class="lgroup">${MV.map(m => lrow({av: figAv(m, TT.res[m]), title: esc(mvName(m,true)), sub: `${t().stepOf(TT.res[m])} · ${esc(sName(m, TT.res[m]))}`, attrs: 'style="cursor:default"'})).join("")}</div>`;
     stp.style.display = "none"; L.textContent = t().tRetake; R.textContent = t().tGo; return;
   }
   const mv = MV[TT.mi], n = TT.n, st = step(mv, n), unit = st.sec ? t().secs : t().reps, side = st.side ? ` (${t().eachSide})` : "";
