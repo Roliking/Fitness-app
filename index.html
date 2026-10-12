@@ -473,6 +473,12 @@ const kp = (K, deg, extra={}) => { // straight line from the knees (kneeling)
 };
 const HANG = (y, extra={}) => Object.assign({W:[50,-4], N:[50,y], P:[50,y+24], F:[47,y+52], kb:-1}, extra);
 const LIE = {N:[28,63], P:[52,63], W:[50,66], eb:-1};
+/* Front-view poses (v:"f"), used where the book shows the movement from the front: grip width,
+   one-arm work and the free arm read better this way. Shoulders and hips stay level, so a pose is
+   shoulder centre S, pelvis centre P, head H, hands WL/WR and feet FL/FR (null = hidden behind the
+   back). Elbows are solved with IK and always point outward; legs are straight. */
+const FPU = (y, x = 50, o = {}) => Object.assign({S:[x,y], H:[x,y-10.5], P:[x,y+22], WL:[41,-2.2], WR:[59,-2.2], FL:[x-2,y+49], FR:[x+2,y+49]}, o); // hanging from the bar
+const FHS = (y, x = 50, o = {}) => Object.assign({S:[x,y], H:[x,y+10.5], P:[x,y-22], WL:[40,66], WR:[60,66], FL:[x-2,y-49], FR:[x+2,y-49]}, o); // handstand, head down
 const GUIDES = {
  push: [
   {a:{N:[60,15],P:[52,38],W:[85,18],F:[47,66]}, b:{N:[70,19],P:[56,38],W:[85,21],F:[48,66]}, props:[["wall",86]],
@@ -523,19 +529,19 @@ const GUIDES = {
    en:"Under a sturdy table or low bar, heels on the floor. Pull your chest up to it.", hu:"Stabil asztal vagy alacsony rúd alatt, sarok a földön. Húzd fel a mellkasod hozzá."},
   {a:{W:[50,-4],N:[50,18],P:[50,42],F:[64,56],kb:-1}, b:{W:[50,-4],N:[50,4],P:[50,28],F:[64,56],kb:-1}, props:[["bar",50,-4],["box",56,80,56]],
    en:"Hang from the bar with your heels on a chair in front. Pull until your chin clears the bar.", hu:"Lógj a rúdon, sarok egy széken elöl. Húzd fel magad, amíg az állad a rúd fölé ér."},
-  {a:HANG(7), b:HANG(-2), props:[["bar",50,-4],["nofloor"]],
+  {v:"f", a:FPU(8), b:FPU(-.5,50,{EL:[36,7.5],ER:[64,7.5]}), props:[["bar",50,-4,22],["nofloor"]],
    en:"Start with elbows at 90°. Pull up until your chin is over the bar.", hu:"Könyök 90°-ban. Húzd fel magad, amíg az állad a rúd fölé ér."},
-  {a:HANG(18), b:HANG(-2), props:[["bar",50,-4],["nofloor"]],
+  {v:"f", a:FPU(17.5), b:FPU(-.5,50,{EL:[36,7.5],ER:[64,7.5]}), props:[["bar",50,-4,22],["nofloor"]],
    en:"Dead hang, shoulder-width grip. Pull up smoothly, chin over the bar, no swinging.", hu:"Teljes lógás, vállszéles fogás. Húzd fel magad lendület nélkül, áll a rúd fölé."},
-  {a:HANG(18), b:HANG(-2), props:[["bar",50,-4],["nofloor"]],
+  {v:"f", a:FPU(17.5,50,{WL:[47.6,-2.2],WR:[52.4,-2.2]}), b:FPU(-.5,50,{WL:[47.6,-2.2],WR:[52.4,-2.2],EL:[38,7.5],ER:[62,7.5]}), props:[["bar",50,-4,22],["nofloor"]],
    en:"Hands touching on the bar. Full range, chin over the bar.", hu:"Kezek összeérnek a rúdon. Teljes mozgás, áll a rúd fölé."},
-  {a:HANG(18,{W2:[50,8]}), b:HANG(-2,{W2:[54,0]}), props:[["bar",50,-4],["nofloor"]],
+  {v:"f", a:FPU(17.5,48,{WL:[54,3.5],WR:[54,-2.2],EL:[39,9]}), b:FPU(-.5,48,{WL:[54,3.5],WR:[54,-2.2],ER:[62,7.5],EL:[38,6]}), props:[["bar",50,-4,22],["nofloor"]],
    en:"One hand on the bar, the other gripping its wrist lower down. Switch sides.", hu:"Egyik kéz a rúdon, a másik lejjebb a csuklóját fogja. Cserélj oldalt."},
-  {a:HANG(7,{W2:[46,40],eb2:-1}), b:HANG(-2,{W2:[46,30],eb2:-1}), props:[["bar",50,-4],["nofloor"]],
+  {v:"f", a:FPU(8,47,{WL:[37,29],WR:[54,-2.2]}), b:FPU(-.5,47,{WL:[37,20.5],WR:[54,-2.2],ER:[61,7.5]}), props:[["bar",50,-4,22],["nofloor"]],
    en:"One arm only, from bent elbow up to chin over the bar.", hu:"Csak egy kézzel, hajlított könyöktől fel, áll a rúd fölé."},
-  {a:HANG(18,{W2:[58,20]}), b:HANG(-2,{W2:[58,12]}), props:[["bar",50,-4],["nofloor"],["towel",56,-4,58,24]],
+  {v:"f", a:FPU(17.5,50,{WL:[42,10],WR:[57,-2.2]}), b:FPU(-.5,50,{WL:[42,10],WR:[57,-2.2],ER:[64,7.5]}), props:[["bar",50,-4,22],["nofloor"],["towel",42,-4,42,22]],
    en:"One hand on the bar, the other on a towel hanging from it. Pull with the bar arm.", hu:"Egyik kéz a rúdon, a másik a rúdról lógó törülközőn. A rúdon lévő kar húz."},
-  {a:HANG(18,{W2:[46,44],eb2:-1}), b:HANG(-2,{W2:[46,24],eb2:-1}), props:[["bar",50,-4],["nofloor"]],
+  {v:"f", a:FPU(17.5,47,{WL:[37,38.5],WR:[54,-2.2]}), b:FPU(-.5,47,{WL:[37,20.5],WR:[54,-2.2],ER:[61,7.5]}), props:[["bar",50,-4,22],["nofloor"]],
    en:"One arm, dead hang to chin over the bar, no kicking.", hu:"Egy kézzel, teljes lógásból áll a rúd fölé, rúgás nélkül."}],
  leg: [
   {a:{N:[30,22],P:[40,42],W:[44,44],F:[68,50],eb:1,kb:-1}, b:{N:[31,22],P:[40,42],W:[44,44],F:[52,38],eb:1,kb:-1}, props:[["box",18,48,44]],
@@ -586,19 +592,19 @@ const GUIDES = {
    en:"Squat, hands on the floor, knees on your elbows. Lean forward until your feet lift. Hold.", hu:"Guggolj, kéz a földön, térd a könyökön. Dőlj előre, amíg a lábad felemelkedik. Tartsd."},
   {a:{N:[64,50],P:[48,40],W:[66,66],F:[34,66],eb:-1,kb:-1}, b:{N:[66,44],P:[68,20],W:[66,66],F:[76,-8],eb:-1}, props:[["wall",78]],
    en:"Kick up into a handstand, heels on the wall, arms locked. Hold.", hu:"Rúgd fel magad kézenállásba, sarok a falon, kar nyújtva. Tartsd."},
-  {a:{N:[66,44],P:[68,20],W:[66,66],F:[76,-8],eb:-1}, b:{N:[66,55],P:[68,31],W:[66,66],F:[76,3],eb:-1}, props:[["wall",78]],
+  {v:"f", a:FHS(43.5), b:FHS(47), props:[["wall"]],
    en:"Handstand against the wall. Lower halfway, elbows to 90°, press back up.", hu:"Kézenállás a falnál. Engedd le félig, könyök 90°, told vissza."},
-  {a:{N:[66,44],P:[68,20],W:[66,66],F:[76,-8],eb:-1}, b:{N:[66,58],P:[68,34],W:[66,66],F:[76,6],eb:-1}, props:[["wall",78]],
+  {v:"f", a:FHS(43.5), b:FHS(49.6), props:[["wall"]],
    en:"Lower until your head lightly touches the floor, then press up to locked arms.", hu:"Engedd le, amíg a fejed finoman leér, majd told fel nyújtott karig."},
-  {a:{N:[66,44],P:[68,20],W:[66,66],F:[76,-8],eb:-1}, b:{N:[66,58],P:[68,34],W:[66,66],F:[76,6],eb:-1}, props:[["wall",78]],
+  {v:"f", a:FHS(43.5,50,{WL:[46.5,66],WR:[53.5,66]}), b:FHS(49.6,50,{WL:[46.5,66],WR:[53.5,66]}), props:[["wall"]],
    en:"Hands close together. Full range, head to the floor.", hu:"Kezek közel egymáshoz. Teljes mozgás, fej a földig."},
-  {a:{N:[66,44],P:[68,20],W:[68,66],W2:[54,54],F:[76,-8],eb:-1}, b:{N:[64,56],P:[68,32],W:[68,66],W2:[54,54],F:[76,4],eb:-1}, props:[["wall",78],["ball",54,60,6]],
+  {v:"f", a:FHS(41.5,50,{WL:[37,54.5]}), b:FHS(49.6,51,{WL:[37,54.5]}), props:[["wall"],["ball",37,60.5,6]],
    en:"One hand on the floor, the other on a basketball. Lower and press; switch sides.", hu:"Egyik kéz a földön, a másik kosárlabdán. Engedd le és told fel; cserélj."},
-  {a:{N:[66,44],P:[68,20],W:[66,66],F:[76,-8],eb:-1}, b:{N:[66,55],P:[68,31],W:[66,66],F:[76,3],eb:-1}, props:[["wall",78]],
+  {v:"f", a:FHS(43.5,51,{WL:[24,66],WR:[56,66],FL:[37,-2],FR:[65,-2]}), b:FHS(47,51,{WL:[24,66],WR:[56,66],FL:[37,1.5],FR:[65,1.5]}), props:[["wall"]],
    en:"One arm only, the other hand lightly balancing. Lower halfway.", hu:"Csak egy kézzel, a másik kéz csak egyensúlyoz. Engedd le félig."},
-  {a:{N:[66,44],P:[68,20],W:[68,66],W2:[50,66],F:[76,-8],eb:-1}, b:{N:[64,56],P:[68,32],W:[68,66],W2:[44,66],F:[76,4],eb:-1}, props:[["wall",78]],
+  {v:"f", a:FHS(43.5,51,{WL:[26,61],WR:[56,66]}), b:FHS(49.6,51,{WL:[24,61.5],WR:[56,66]}), props:[["wall"],["ball",24,62,4.6]],
    en:"One arm under you, the other straight out to the side on a ball.", hu:"Egyik kar alattad, a másik nyújtva oldalra egy labdán."},
-  {a:{N:[66,44],P:[68,20],W:[66,66],F:[76,-8],eb:-1}, b:{N:[66,58],P:[68,34],W:[66,66],F:[76,6],eb:-1}, props:[["wall",78]],
+  {v:"f", a:FHS(43.5,51,{WL:[25,55],WR:[56,66]}), b:FHS(49.6,51,{WL:[25,60],WR:[56,66]}), props:[["wall"]],
    en:"One-arm handstand against the wall. Full range, head to the floor.", hu:"Egykezes kézenállás a falnál. Teljes mozgás, fej a földig."}]
 };
 
@@ -660,6 +666,7 @@ function muscle(A, B, wA, wB, belly, side, at = .38){
     at_(at + .1, -s*(hA + belly*.35)), at_(0, -s*hA), V.add(A, d, -hA*.75)]);
 }
 function figureSVG(g, t){
+  if (g.v) return frontSVG(g, t);
   const p = poseAt(g, t), L = GL;
   const u = V.unit(p.P, p.N), fr = g.flip ? [u[1], -u[0]] : [-u[1], u[0]]; // flip: lying face-up with the head to the right
   const Hc = p.H || V.add(p.N, u, L.head + 2.5);
@@ -699,9 +706,69 @@ function figureSVG(g, t){
   out += arm("W", false);
   return out;
 }
+// ---- front view ----
+function frontAt(g, t){ // joints at time t; hands/feet that don't move stay planted
+  const A = g.a, B = g.b || g.a, q = {};
+  for (const k of ["S","P","H","WL","WR","FL","FR"]) {
+    const a = A[k], b = k in B ? B[k] : a;
+    q[k] = a && b ? [lerp(a[0], b[0], t), lerp(a[1], b[1], t)] : null;
+  }
+  const out = (R, X) => { // elbow that points away from the body's midline
+    const e1 = ik(R, X, GL.ua, GL.fa, 1), e2 = ik(R, X, GL.ua, GL.fa, -1);
+    return Math.abs(e1[0] - q.S[0]) >= Math.abs(e2[0] - q.S[0]) ? e1 : e2;
+  };
+  const up = q.H[1] < q.S[1] ? 1 : -1; // 1 = head above the shoulders
+  q.SL = [q.S[0] - 7, q.S[1]]; q.SR = [q.S[0] + 7, q.S[1]];
+  q.HL = [q.P[0] - 4, q.P[1]]; q.HR = [q.P[0] + 4, q.P[1]];
+  // elbows point away from the midline; a pose may pin them (upper arm foreshortened toward the camera)
+  const elb = (side, W) => { if (!W) return null;
+    const at = (Pz) => { if (Pz["E"+side]) return Pz["E"+side];
+      const S = Pz.S, Wz = Pz["W"+side] || W, Sh = [S[0] + (side === "L" ? -7 : 7), S[1]];
+      const e1 = ik(Sh, Wz, GL.ua, GL.fa, 1), e2 = ik(Sh, Wz, GL.ua, GL.fa, -1);
+      return Math.abs(e1[0] - S[0]) >= Math.abs(e2[0] - S[0]) ? e1 : e2; };
+    if (!A["E"+side] && !B["E"+side]) return out(side === "L" ? q.SL : q.SR, W);
+    const a = at(A), b = at(B); return [lerp(a[0], b[0], t), lerp(a[1], b[1], t)]; };
+  q.EL = elb("L", q.WL); q.ER = elb("R", q.WR);
+  q.KL = [(q.HL[0] + q.FL[0])/2, (q.HL[1] + q.FL[1])/2]; q.KR = [(q.HR[0] + q.FR[0])/2, (q.HR[1] + q.FR[1])/2];
+  q.up = up; return q;
+}
+function frontPts(g, t){
+  const q = frontAt(g, t), r = 6.6;
+  return [q.SL, q.SR, q.FL, q.FR, q.WL, q.WR, q.EL, q.ER, [q.H[0]-5, q.H[1]-r], [q.H[0]+5, q.H[1]+r]].filter(Boolean);
+}
+function frontSVG(g, t){
+  const q = frontAt(g, t), P = (d, cl = "fa") => `<path class="${cl}" d="${d}"/>`;
+  const far = q.P[1] > q.S[1] && q.P[1] - q.S[1] < 12; // push-up seen head-on: hips and legs recede behind the chest
+  const lw = far ? .7 : 1;
+  const leg = (H, K, F) => { const o = [Math.sign(H[0] - q.P[0]) || 1, 0], d = V.unit(K, F), n = [-d[1], d[0]];
+    const f = (a, b) => V.add(V.add(F, n, a*lw), d, b*lw);
+    return P(muscle(H, K, 8.4*lw, 5*lw, 1.6*lw, o)) + P(muscle(K, F, 5.2*lw, 3*lw, 1.4*lw, o, .3)) +
+      P(smooth([f(-1.6,-1), f(-1.3,3.6), f(0,4.4), f(1.3,3.6), f(1.6,-1)])); };
+  const arm = (S, E, W) => { const o = [Math.sign(S[0] - q.S[0]), 0], d = V.unit(E, W), n = [-d[1], d[0]];
+    const h = (a, b) => V.add(V.add(W, n, a), d, b);
+    return P(muscle(S, E, 6, 4.4, 1.5, o)) + P(muscle(E, W, 4.6, 2.8, 1.1, o, .25)) +
+      P(smooth([h(-1.5,-.4), h(-1.6,2.4), h(0,3.6), h(1.6,2.4), h(1.5,-.4)])); };
+  // torso drawn in a frame running from the shoulders toward the pelvis
+  const Lt = Math.max(V.len(q.S, q.P), far ? 8 : 0), dn = q.P[1] >= q.S[1] ? 1 : -1, k = Lt / 22;
+  const T = (al, ac, c = q.S, sc = k) => [c[0] + ac, c[1] + dn*al*sc];
+  let o = leg(q.HL, q.KL, q.FL) + leg(q.HR, q.KR, q.FR);
+  const pc = far ? .7 : 1;
+  o += P(smooth([[5,0],[3,6],[-2,7],[-5,4],[-5,-4],[-2,-7],[3,-6]].map(([al, ac]) => T(al*pc, ac*pc, q.P, 1))));            // pelvis
+  o += P(smooth([[18,0],[16,6],[8,8.5],[-.5,7.5],[-2,0],[-.5,-7.5],[8,-8.5],[16,-6]].map(([al, ac]) => T(al, ac))));       // rib cage
+  o += P(`M${fx(q.S[0]-3)},${fx(q.S[1]+dn*11*k)}Q${fx(q.S[0])},${fx(q.S[1]+dn*13*k)} ${fx(q.S[0]+3)},${fx(q.S[1]+dn*11*k)}`, "fl"); // pec line
+  if (q.WL) o += arm(q.SL, q.EL, q.WL); else o += P(muscle(q.SL, [q.SL[0]-1.2, q.SL[1]+dn*5], 6, 5, .8, [-1,0])); // arm behind the back
+  if (q.WR) o += arm(q.SR, q.ER, q.WR); else o += P(muscle(q.SR, [q.SR[0]+1.2, q.SR[1]+dn*5], 6, 5, .8, [1,0]));
+  // neck and head: chin toward the chest; on a head-on push-up the face hides the neck
+  const u = q.up, Hc = q.H;
+  if (Math.abs(Hc[1] - q.S[1]) > 7) o += P(muscle([q.S[0], q.S[1] + u*.5], [Hc[0], Hc[1] + u*5], 4, 3.4, .1, [1,0]));
+  const hu = far ? 1 : u;
+  o += P(smooth([[0,6],[3.4,4.6],[5,0],[4,-5],[0,-6.6],[-4,-5],[-5,0],[-3.4,4.6]].map(([x, y]) => [Hc[0] + x, Hc[1] + hu*y])));
+  return o;
+}
 function guideBox(g){ // tight viewBox around both poses and the props
   const xs = [], ys = [], add = q => { xs.push(q[0]); ys.push(q[1]); };
   for (const t of [0, .5, 1]) {
+    if (g.v) { frontPts(g, t).forEach(add); continue; }
     const p = poseAt(g, t), dx = p.N[0]-p.P[0], dy = p.N[1]-p.P[1], d = Math.hypot(dx, dy) || 1;
     [p.N, p.P, p.W, p.F, p.H || [p.N[0]+GL.head*dx/d, p.N[1]+GL.head*dy/d], ik(p.N,p.W,GL.ua,GL.fa,p.eb??1), ik(p.P,p.F,GL.th,GL.sh,p.kb??-1)].forEach(add);
     if (p.W2) add(p.W2); if (p.F2) add(p.F2);
@@ -709,8 +776,8 @@ function guideBox(g){ // tight viewBox around both poses and the props
   for (const [k, ...v] of g.props || []) {
     if (k === "box") { add([v[0], v[2]]); add([v[1], 67]); }
     if (k === "ball") { add([v[0]-v[2], v[1]-v[2]]); add([v[0]+v[2], v[1]+v[2]]); }
-    if (k === "bar") { add([v[0]-14, v[1]]); add([v[0]+14, v[1]]); }
-    if (k === "wall" || k === "pole") add([v[0], ys.length ? Math.min(...ys) : 0]);
+    if (k === "bar") { add([v[0]-(v[2]||14), v[1]]); add([v[0]+(v[2]||14), v[1]]); }
+    if ((k === "wall" && v.length) || k === "pole") add([v[0], ys.length ? Math.min(...ys) : 0]);
   }
   if (!(g.props || []).some(x => x[0] === "nofloor")) add([xs[0], 67]);
   let x0 = Math.min(...xs) - 9, x1 = Math.max(...xs) + 9, y0 = Math.min(...ys) - 9, y1 = Math.max(...ys) + 3;
@@ -720,9 +787,9 @@ function guideBox(g){ // tight viewBox around both poses and the props
 function propsSVG(g){
   const pr = g.props || []; let s = pr.some(x => x[0] === "nofloor") ? "" : `<line class="gp" x1="-20" y1="66.8" x2="120" y2="66.8"/>`;
   for (const [k, ...v] of pr) {
-    if (k === "wall") s += `<line class="gp" x1="${v[0]}" y1="-10" x2="${v[0]}" y2="67"/>`;
+    if (k === "wall" && v.length) s += `<line class="gp" x1="${v[0]}" y1="-10" x2="${v[0]}" y2="67"/>`;
     if (k === "pole") s += `<line class="gp" x1="${v[0]}" y1="-10" x2="${v[0]}" y2="67"/>`;
-    if (k === "bar") s += `<line class="gp" x1="${v[0]-14}" y1="${v[1]}" x2="${v[0]+14}" y2="${v[1]}"/>`;
+    if (k === "bar") s += `<line class="gp" x1="${v[0]-(v[2]||14)}" y1="${v[1]}" x2="${v[0]+(v[2]||14)}" y2="${v[1]}"/>`;
     if (k === "box") s += `<rect class="gb" x="${v[0]}" y="${v[2]}" width="${v[1]-v[0]}" height="${67-v[2]}" rx="1.5"/>`;
     if (k === "ball") s += `<circle class="gb" cx="${v[0]}" cy="${v[1]}" r="${v[2]}"/>`;
     if (k === "towel") s += `<line class="gt" x1="${v[0]}" y1="${v[1]}" x2="${v[2]}" y2="${v[3]}"/>`;
